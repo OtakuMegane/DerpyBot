@@ -13,6 +13,15 @@ config.read("config/config.ini")
 discord_bot_token = config.get('Discord', 'token')
 discord_playing = config.get('Discord', 'playing')
 discord_client = discord.Client()
+discord_channels = []
+discord_learn_channels = []
+
+for channel in config.get('Discord', 'channels').split(','):
+    discord_channels.append(channel.strip())
+
+for channel in config.get('Discord', 'learn-channels').split(','):
+    discord_learn_channels.append(channel.strip())
+    
 ready = False
 markov = None
 
@@ -47,12 +56,19 @@ async def on_ready():
 @discord_client.event
 async def on_message(message):
     reply = None
+    markov_learn = True
+
+    if message.channel.name not in discord_channels:
+        return
 
     if message.author.bot or message.author == discord_client.user:
         return
 
     if message.content is "" or message.content is None:
         return
+
+    if message.channel.name not in discord_learn_channels:
+        markov_learn = False
 
     if message.channel.is_private:
         console_print("Direct Message from " + str(message.author) + ": " + str(message.clean_content))
@@ -66,7 +82,7 @@ async def on_message(message):
         reply = discord_commands.get_commands(message, split_content)
     else:
         if markov is not None:
-            reply = markov.incoming_message(message.clean_content, discord_client.user.name)
+            reply = markov.incoming_message(message.clean_content, discord_client.user.name, markov_learn)
 
     if reply is not "" and reply is not None:
         if message.channel.is_private:
@@ -83,7 +99,7 @@ def launch(markov_instance):
     global markov
 
     markov = markov_instance
-    discord_commands.pass_data(markov, config) # We'll probably do something better eventually
+    discord_commands.pass_data(markov, config)  # We'll probably do something better eventually
     discord_commands.load_custom_commands(False)
 
     try:

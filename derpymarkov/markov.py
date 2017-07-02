@@ -103,7 +103,7 @@ def get_statistics(print_to_console, return_formatted):
 
 def setup_commands():
     global commands
-    
+
     commands['statistics']['description'] = 'List statistics for markov instance'
     commands['version']['description'] = 'Get current version'
 
@@ -116,7 +116,7 @@ def incoming_console_command(command):
 
     if command == 'statistics':
         get_statistics(True, False)
-        
+
     if command == 'version':
         console_print("derpymarkov " + version)
 
@@ -124,13 +124,13 @@ def incoming_message_command(command):
     if command == 'statistics':
         stats = get_statistics(False, True)
         return stats
-    
+
     if command == 'version':
         return "derpymarkov version: " + version
-    
+
     return None
 
-def incoming_message(message, client_name):
+def incoming_message(message, client_name, do_learn):
     """
     The primary input function. At present any content from outside classes or
     modules comes through here. A reply is returned if warranted, otherwise
@@ -163,7 +163,9 @@ def incoming_message(message, client_name):
                 bot_named = True
 
     prepared_message = prepare_message(message)
-    learn(prepared_message)
+    if do_learn:
+        learn(prepared_message)
+
     reply_rand = random.uniform(0, 100.0)
 
     if bot_named or bot_paged:
@@ -299,6 +301,7 @@ def update_stats(parsed_sentences = None):
     global line_count, context_count, word_count, unique_words, unique_word_count
 
     if parsed_sentences is None:
+        word_count = 0
         parsed_sentences = model.parsed_sentences
 
     for sentence in model.parsed_sentences:
