@@ -120,6 +120,7 @@ def shutdown():
     console_print("Good night!")
     raise SystemExit
 
+console_print("DerpyBot version " + version)
 markov_load(False)
 client_load(False)
 

@@ -52,6 +52,7 @@ def activate(reload):
         reload()
 
     console_print("Loading DerpyMarkov...")
+    console_print("DerpyMarkov version " + version)
     input_text = ""
 
     if os.path.exists(config.main_text_file) and os.path.isfile(config.main_text_file):
