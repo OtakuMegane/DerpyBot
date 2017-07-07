@@ -3,13 +3,16 @@ from configparser import SafeConfigParser
 import common
 import time
 import importlib
+import importlib.util
 import re
+import os
 
-version = "0.9.1"
+version = '0.9.2'
 
-config = SafeConfigParser()
-config.read("config/defaults.ini")
-config.read("config/config.ini")
+script_location = os.path.dirname(os.path.abspath(__file__))
+config = SafeConfigParser(allow_no_value=True)
+config.read(script_location + '/config/defaults.cfg')
+config.read(script_location + '/config/config.cfg')
 
 markov = None
 use_discord_client = common.set_boolean(config.get('Config', 'use_discord_client'))
@@ -82,10 +85,10 @@ def client_load(reload):
         importlib.reload(chat_client)
     else:
         if use_discord_client:
-            chat_client = importlib.import_module('discord_client.discord_client')
+            chat_client = importlib.import_module('clients.discord_client.discord_client')
 
     client_thread = None
-    client_thread = Thread(target = chat_client.launch, args = ([markov]))
+    client_thread = Thread(target = chat_client.launch, args = ([markov, script_location]))
     client_thread.start()
 
 def markov_load(reload):
@@ -101,7 +104,7 @@ def markov_load(reload):
     else:
         markov_package = config.get('Markov', 'markov_package')
         markov_module = config.get('Markov', 'markov_module')
-        markov = importlib.import_module(markov_package + '.' + markov_module)
+        markov = importlib.import_module('modules.' + markov_package + '.' + markov_module)
 
     markov.activate(reload)
 

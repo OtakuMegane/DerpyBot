@@ -1,17 +1,20 @@
 from configparser import SafeConfigParser
 import pkg_resources
 import common
+import os
 
-defaults_file = pkg_resources.resource_string(__name__, "config/defaults.ini")
-config_file = pkg_resources.resource_string(__name__, "config/config.ini")
+defaults_file = pkg_resources.resource_string(__name__, "config/defaults.cfg")
+config_file = pkg_resources.resource_string(__name__, "config/config.cfg")
+script_location = os.path.dirname(os.path.abspath(__file__))
 
 config = SafeConfigParser()
 config.read_string(defaults_file.decode())
 config.read_string(config_file.decode())
 
 text_directory = config.get('General', 'text_directory')
+absolute_text_directory = script_location + '/' + text_directory
 main_text_filename = config.get('General', 'main_text_file')
-main_text_file = text_directory + '/' + main_text_filename
+main_text_file = absolute_text_directory + '/' + main_text_filename
 supplementary_text_filename = config.get('General', 'supplementary_text_file')
 supplementary_text_file = text_directory + '/' + supplementary_text_filename
 state_size1 = int(config.get('General', 'state_size'))

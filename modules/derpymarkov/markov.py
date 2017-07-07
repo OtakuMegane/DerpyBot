@@ -9,7 +9,7 @@ import markovify
 import os
 from collections import defaultdict
 
-version = "0.9.1"
+version = '0.9.2'
 
 model = None
 unsaved = False
@@ -334,8 +334,12 @@ def save():
     console_print("Saving lines...")
 
     if os.path.exists(config.main_text_file) and not os.path.isfile(config.main_text_file):
-        console_print("Error! " + main_text_file + " is not a valid file. Cannot save lines.")
+        console_print("Error! " + config.main_text_filename + " exists but is not a valid file. Cannot save lines.")
         return
+    
+    if not os.path.exists(config.main_text_file):
+        os.makedirs(config.absolute_text_directory, exist_ok=True)
+        console_print(config.main_text_filename + " was not found. Creating new file...")
 
     with threading.Lock():
         with open(config.main_text_file, '+w', encoding = "utf8") as text:

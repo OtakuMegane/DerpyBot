@@ -7,6 +7,7 @@ from collections import defaultdict
 commands = defaultdict(dict)
 markov = None
 config = None
+parent_location = None
 
 def pass_data(markov_instance, discord_config):
     global markov, config
@@ -50,8 +51,11 @@ def list_commands():
     
     return "**" + command_output + "**"
 
-def load_custom_commands(reload):
-    global commands
+def load_custom_commands(reload, script_location):
+    global commands, parent_location
+    
+    if parent_location is None:
+        parent_location = script_location
     
     if reload:
         commands = defaultdict(dict)
@@ -59,7 +63,7 @@ def load_custom_commands(reload):
     #custom_file = pkg_resources.resource_string(__name__, 'custom_commands.ini')
     config = SafeConfigParser()
     #config.read_string(custom_file.decode())
-    config.read("config/custom_discord_commands.ini")
+    config.read(parent_location + '/config/custom_discord_commands.cfg')
     sections = config.sections()
 
     for section in sections:
@@ -90,8 +94,8 @@ def get_commands(message, split_content):
     if 'commands' in split_content[0]:
         return list_commands()
     
-    if 'reload commands' and message.author.id == config.get('Discord', 'owner_id'):
-        load_custom_commands(True)
+    if 'reload commands' and message.author.id == config.owner_id:
+        load_custom_commands(True, parent_location)
 
     for command in commands:
         if rejoined.startswith(command):

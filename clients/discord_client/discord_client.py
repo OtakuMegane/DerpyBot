@@ -5,23 +5,12 @@ import time
 from configparser import SafeConfigParser
 import importlib
 from . import discord_commands
+from . import config
+import os
 
-config = SafeConfigParser()
-config.read("config/defaults.ini")
-config.read("config/config.ini")
+version = '0.9.2'
 
-discord_bot_token = config.get('Discord', 'token')
-discord_playing = config.get('Discord', 'playing')
 discord_client = discord.Client()
-discord_channels = []
-discord_learn_channels = []
-
-for channel in config.get('Discord', 'channels').split(','):
-    discord_channels.append(channel.strip())
-
-for channel in config.get('Discord', 'learn-channels').split(','):
-    discord_learn_channels.append(channel.strip())
-    
 ready = False
 markov = None
 
@@ -45,8 +34,8 @@ async def on_ready():
     console_print("  ID: " + discord_client.user.id)
 
     try:
-        await discord_client.change_presence(game = discord.Game(name = discord_playing))
-        console_print("  Playing: " + discord_playing)
+        await discord_client.change_presence(game = discord.Game(name = config.discord_playing))
+        console_print("  Playing: " + config.discord_playing)
     except:
         console_print("  Could not set 'Playing' status for some reason.")
         console_print(" ")
@@ -58,7 +47,7 @@ async def on_message(message):
     reply = None
     markov_learn = True
 
-    if message.channel.name not in discord_channels:
+    if message.channel.name not in config.discord_channels:
         return
 
     if message.author.bot or message.author == discord_client.user:
@@ -67,7 +56,7 @@ async def on_message(message):
     if message.content is "" or message.content is None:
         return
 
-    if message.channel.name not in discord_learn_channels:
+    if message.channel.name not in config.discord_learn_channels:
         markov_learn = False
 
     if message.channel.is_private:
@@ -95,15 +84,16 @@ async def on_message(message):
         else:
             await discord_client.send_message(message.channel, embed = reply)
 
-def launch(markov_instance):
+def launch(markov_instance, parent_location):
     global markov
-
+    
+    config.load(parent_location)
     markov = markov_instance
     discord_commands.pass_data(markov, config)  # We'll probably do something better eventually
-    discord_commands.load_custom_commands(False)
+    discord_commands.load_custom_commands(False, parent_location)
 
     try:
-        discord_client.loop.run_until_complete(discord_client.start(discord_bot_token))
+        discord_client.loop.run_until_complete(discord_client.start(config.bot_token))
     except KeyboardInterrupt:
         discord_client.loop.run_until_complete(discord_client.logout())
         pending = asyncio.Task.all_tasks(loop = discord_client.loop)
