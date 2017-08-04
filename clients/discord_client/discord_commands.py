@@ -2,6 +2,7 @@ from configparser import SafeConfigParser
 import pkg_resources
 import common
 import discord
+import re
 from collections import defaultdict
 
 commands = defaultdict(dict)
@@ -98,7 +99,7 @@ def get_commands(message, split_content):
         load_custom_commands(True, parent_location)
 
     for command in commands:
-        if rejoined.startswith(command):
+        if re.match(re.escape(command) + r'([^\w]|$)', rejoined) is not None:
             if commands[command]['base_command'] is not None:
                 command = commands[command]['base_command']
 
