@@ -21,12 +21,10 @@ chat_client = None
 client_thread = None
 status_thread = None
 shutting_down = False
+console_prefix = "[DerpyBot] "
 
-def console_print(output):
-    print("[DerpyBot] " + output)
-    
 def commands():
-    console_print("Entering command mode...")
+    common.console_print(console_prefix, "Entering command mode...")
 
     while not shutting_down:
         command = input('>> ')
@@ -42,7 +40,7 @@ def commands():
             markov.incoming_console_command(sub_command)
 
         if command == "client status":
-            console_print("Client logged in: " + str(chat_client.logged_in()))
+            common.console_print(console_prefix, "Client logged in: " + str(chat_client.logged_in()))
 
         if command == "client reload":
             client_load(True)
@@ -78,7 +76,7 @@ def client_status():
 def client_load(reload):
     global chat_client, client_thread
 
-    console_print("Loading chat client...")
+    common.console_print(console_prefix, "Loading chat client...")
 
     if reload:
         client_shutdown()
@@ -97,7 +95,7 @@ def markov_load(reload):
     if not use_markov:
         return
 
-    console_print("Loading markov...")
+    common.console_print(console_prefix, "Loading markov...")
 
     if reload:
         importlib.reload(markov)
@@ -111,16 +109,16 @@ def markov_load(reload):
 def shutdown():
     global shutting_down
     shutting_down = True
-    console_print("Shutting everything down...")
+    common.console_print(console_prefix, "Shutting everything down...")
 
     if not markov.shutting_down:
         markov.shutdown()
 
     chat_client.shutdown()
-    console_print("Good night!")
+    common.console_print(console_prefix, "Good night!")
     raise SystemExit
 
-console_print("DerpyBot version " + version)
+common.console_print(console_prefix, "DerpyBot version " + version)
 markov_load(False)
 client_load(False)
 

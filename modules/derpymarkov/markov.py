@@ -7,6 +7,7 @@ import time
 import threading
 import markovify
 import os
+import common
 from collections import defaultdict
 
 version = '0.9.2'
@@ -32,9 +33,7 @@ unique_word_count = 0
 line_count = 0
 word_count = 0
 context_count = 0
-
-def console_print(output):
-    print("[DerpyMarkov] " + output)
+console_prefix = "[DerpyMarkov] "
 
 def reload():
     importlib.reload(config)
@@ -51,24 +50,13 @@ def activate(reload):
     if reload:
         reload()
 
-    console_print("Loading DerpyMarkov...")
-    console_print("DerpyMarkov version " + version)
-    input_text = ""
-
-    if os.path.exists(config.main_text_file) and os.path.isfile(config.main_text_file):
-            with open(config.main_text_file, encoding = "utf8", errors = "backslashreplace") as text:
-                input_text = text.read()
-                text.close()
-
-    if os.path.exists(config.supplementary_text_file) and os.path.isfile(config.supplementary_text_file):
-        with open(config.supplementary_text_file, encoding = "utf8", errors = "backslashreplace") as text:
-            input_text += text.read()
-            text.close()
-
+    common.console_print(console_prefix, "Loading DerpyMarkov...")
+    common.console_print(console_prefix, "DerpyMarkov version " + version)
+    input_text = common.text_file_read(config.main_text_file)
     model = derpymodel.DerpyText(input_text, state_size = config.state_size1)
     lines = generate_lines_from_model(True)
     get_statistics(True, False)
-    console_print("Normal reply rate is " + str(config.reply_rate) + " and bot name reply rate is " + str(config.bot_name_reply_rate) + ".")
+    common.console_print(console_prefix, "Normal reply rate is " + str(config.reply_rate) + " and bot name reply rate is " + str(config.bot_name_reply_rate) + ".")
     del input_text
     setup_commands()
 
@@ -93,9 +81,9 @@ def get_statistics(print_to_console, return_formatted):
     output.append("We are currently using a state size of " + str(model.state_size) + " which generated " + str(context_count) + " contexts.")
 
     if print_to_console:
-        console_print(output[0])
-        console_print(output[1])
-        console_print(output[2])
+        common.console_print(console_prefix, output[0])
+        common.console_print(console_prefix, output[1])
+        common.console_print(console_prefix, output[2])
 
     if return_formatted:
         return "\n".join(output)
@@ -119,7 +107,7 @@ def incoming_console_command(command):
         get_statistics(True, False)
 
     if command == 'version':
-        console_print("derpymarkov " + version)
+        common.console_print(console_prefix, "derpymarkov " + version)
 
 def incoming_message_command(command):
     if command == 'statistics':
@@ -332,22 +320,22 @@ def save():
     if not unsaved:
         return
 
-    console_print("Saving lines...")
+    common.console_print(console_prefix, "Saving lines...")
 
     if os.path.exists(config.main_text_file) and not os.path.isfile(config.main_text_file):
-        console_print("Error! " + config.main_text_filename + " exists but is not a valid file. Cannot save lines.")
+        common.console_print(console_prefix, "Error! " + config.main_text_filename + " exists but is not a valid file. Cannot save lines.")
         return
     
     if not os.path.exists(config.main_text_file):
         os.makedirs(config.absolute_text_directory, exist_ok=True)
-        console_print(config.main_text_filename + " was not found. Creating new file...")
+        common.console_print(console_prefix, config.main_text_filename + " was not found. Creating new file...")
 
     with threading.Lock():
         with open(config.main_text_file, '+w', encoding = "utf8") as text:
             text.write('\n'.join(sorted(lines)))
             text.close()
 
-    console_print("Lines saved!")
+    common.console_print(console_prefix, "Lines saved!")
     unsaved = False
 
 def shutdown():
@@ -359,7 +347,7 @@ def shutdown():
     shutting_down = True
     save()
     del model
-    console_print("DerpyMarkov is shutting down now.")
+    common.console_print(console_prefix, "DerpyMarkov is shutting down now.")
     return True
 
 def timed_loop():

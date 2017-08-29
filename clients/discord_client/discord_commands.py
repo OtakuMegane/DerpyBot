@@ -1,9 +1,10 @@
 from configparser import SafeConfigParser
 import pkg_resources
-import common
 import discord
 import re
+import os
 from collections import defaultdict
+import common
 
 commands = defaultdict(dict)
 markov = None
@@ -61,10 +62,9 @@ def load_custom_commands(reload, script_location):
     if reload:
         commands = defaultdict(dict)
 
-    #custom_file = pkg_resources.resource_string(__name__, 'custom_commands.ini')
     config = SafeConfigParser()
-    #config.read_string(custom_file.decode())
-    config.read(parent_location + '/config/custom_discord_commands.cfg')
+    commands_input = common.text_file_read(parent_location + '/config/custom_discord_commands.cfg')
+    config.read_string(commands_input)
     sections = config.sections()
 
     for section in sections:
