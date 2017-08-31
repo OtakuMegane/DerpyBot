@@ -11,12 +11,12 @@ config = SafeConfigParser()
 config.read_string(defaults_file.decode())
 config.read_string(config_file.decode())
 
-text_directory = config.get('General', 'text_directory')
-absolute_text_directory = script_location + '/' + text_directory
-main_text_filename = config.get('General', 'main_text_file')
-main_text_file = absolute_text_directory + '/' + main_text_filename
+dictionary_directory = config.get('General', 'dictionary_directory')
+absolute_dictionary_directory = script_location + '/' + dictionary_directory
+main_dictionary_filename = config.get('General', 'main_dictionary_file')
+main_dictionary_file = absolute_dictionary_directory + '/' + main_dictionary_filename
 supplementary_text_filename = config.get('General', 'supplementary_text_file')
-supplementary_text_file = text_directory + '/' + supplementary_text_filename
+supplementary_text_file = dictionary_directory + '/' + supplementary_text_filename
 state_size1 = int(config.get('General', 'state_size'))
 learn = common.set_boolean(config.get('General', 'learn'))
 save_interval = int(config.get('General', 'save_interval'))

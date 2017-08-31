@@ -55,7 +55,7 @@ async def on_message(message):
     if message.content is "" or message.content is None:
         return
 
-    if message.channel.name not in config.discord_learn_channels:
+    if message.channel.name not in config.discord_markov_channels:
         markov_learn = False
 
     if message.channel.is_private:
@@ -73,10 +73,11 @@ async def on_message(message):
             reply = markov.incoming_message(message.clean_content, discord_client.user.name, markov_learn)
 
     if reply is not "" and reply is not None:
-        if message.channel.is_private:
-            common.console_print(console_prefix, "Direct Message to " + message.author + ": " + reply)
-        else:
-            common.console_print(console_prefix, "Message to #" + message.channel.name + ": " + reply)
+        if config.chat_to_console:
+            if message.channel.is_private:
+                common.console_print(console_prefix, "Direct Message to " + message.author + ": " + reply)
+            else:
+                common.console_print(console_prefix, "Message to #" + message.channel.name + ": " + reply)
 
         if isinstance(reply, str):
             await discord_client.send_message(message.channel, reply)

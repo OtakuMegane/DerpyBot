@@ -1,6 +1,6 @@
 [General]
-text_directory = dictionaries
-main_text_file = lines.txt
+dictionary_directory = dictionaries
+main_dictionary_file = lines.txt
 supplementary_text_file = moar-lines.txt
 state_size = 1
 learn = true

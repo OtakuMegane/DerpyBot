@@ -10,7 +10,7 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.2'
+version = '0.9.3'
 
 model = None
 unsaved = False
@@ -52,7 +52,7 @@ def activate(reload):
 
     common.console_print(console_prefix, "Loading DerpyMarkov...")
     common.console_print(console_prefix, "DerpyMarkov version " + version)
-    input_text = common.text_file_read(config.main_text_file)
+    input_text = common.text_file_read(config.main_dictionary_file)
     model = derpymodel.DerpyText(input_text, state_size = config.state_size1)
     lines = generate_lines_from_model(True)
     get_statistics(True, False)
@@ -322,16 +322,16 @@ def save():
 
     common.console_print(console_prefix, "Saving lines...")
 
-    if os.path.exists(config.main_text_file) and not os.path.isfile(config.main_text_file):
-        common.console_print(console_prefix, "Error! " + config.main_text_filename + " exists but is not a valid file. Cannot save lines.")
+    if os.path.exists(config.main_dictionary_file) and not os.path.isfile(config.main_dictionary_file):
+        common.console_print(console_prefix, "Error! " + config.main_dictionary_filename + " exists but is not a valid file. Cannot save lines.")
         return
     
-    if not os.path.exists(config.main_text_file):
-        os.makedirs(config.absolute_text_directory, exist_ok=True)
-        common.console_print(console_prefix, config.main_text_filename + " was not found. Creating new file...")
+    if not os.path.exists(config.main_dictionary_file):
+        os.makedirs(config.absolute_dictionary_directory, exist_ok=True)
+        common.console_print(console_prefix, config.main_dictionary_filename + " was not found. Creating new file...")
 
     with threading.Lock():
-        with open(config.main_text_file, '+w', encoding = "utf8") as text:
+        with open(config.main_dictionary_file, '+w', encoding = "utf8") as text:
             text.write('\n'.join(sorted(lines)))
             text.close()
 
