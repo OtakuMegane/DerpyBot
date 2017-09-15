@@ -10,7 +10,7 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.3'
+version = '0.9.3.1'
 
 model = None
 unsaved = False

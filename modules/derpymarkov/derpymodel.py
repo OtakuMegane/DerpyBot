@@ -16,7 +16,7 @@ class DerpyText(markovify.Text):
         the type of punctuation that would look strange on its own
         in a randomly-generated sentence. 
         """
-        
+        if len(sentence.strip()) == 0: return False
         #reject_pat = re.compile(r"(^')|('$)|\s'|'\s|[\"(\(\)\[\])]")
         reject_pat = re.compile(r"(?!)")
         # Decode unicode, mainly to normalize fancy quotation marks

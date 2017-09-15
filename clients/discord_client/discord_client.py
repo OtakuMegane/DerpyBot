@@ -14,6 +14,7 @@ version = '0.9.2'
 discord_client = discord.Client()
 ready = False
 markov = None
+derpy_stats = None
 console_prefix = "[Discord] "
 
 def logged_in():
@@ -84,12 +85,13 @@ async def on_message(message):
         else:
             await discord_client.send_message(message.channel, embed = reply)
 
-def launch(markov_instance, parent_location):
-    global markov
+def launch(markov_instance, parent_location, stats_instance):
+    global markov, derpy_stats
     
     config.load(parent_location)
     markov = markov_instance
-    discord_commands.pass_data(markov, config)  # We'll probably do something better eventually
+    derpy_stats = stats_instance
+    discord_commands.pass_data(markov, config, stats_instance)  # We'll probably do something better eventually
     discord_commands.load_custom_commands(False, parent_location)
 
     try:
