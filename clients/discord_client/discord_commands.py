@@ -100,14 +100,16 @@ def get_commands(message, split_content):
     
     if 'reload commands' and message.author.id == config.owner_id:
         load_custom_commands(True, parent_location)
+        return "Commands have been reloaded!"
         
     if 'uptime' in split_content[0]:
         bot_start_time = derpy_stats.retrieve_stats('derpybot', 'start_time')
         uptime_delta = datetime.datetime.now() - bot_start_time
         up_m, up_s = divmod(uptime_delta.seconds, 60)
         up_h, up_m = divmod(up_m, 60)
-        up_d, up_h = divmod(up_h, 24)
-        return "I has been running for: {3} days, {2} hours, {1} minutes, {0} seconds".format(up_s, up_m, up_h, up_d)
+        up_d = uptime_delta.days
+        uptime = "I has been running for: {3} days, {2} hours, {1} minutes, {0} seconds".format(up_s, up_m, up_h, up_d)
+        return uptime
 
     for command in commands:
         if re.match(re.escape(command) + r'([^\w]|$)', rejoined) is not None:

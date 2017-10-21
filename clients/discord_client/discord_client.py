@@ -9,7 +9,7 @@ from . import config
 import os
 import common
 
-version = '0.9.2'
+version = '0.9.2.1'
 
 discord_client = discord.Client()
 ready = False
@@ -22,23 +22,23 @@ def logged_in():
 
 def still_running(print):
     if print:
-        common.console_print(console_prefix, "Client still running! Logged in? " + logged_in())
+        common.console_print("Client still running! Logged in? " + logged_in(), console_prefix)
     return True
 
 @discord_client.event
 async def on_ready():
     global ready
 
-    common.console_print(console_prefix, " We have logged in to Discord!")
-    common.console_print(console_prefix, "  Name: " + discord_client.user.name)
-    common.console_print(console_prefix, "  ID: " + discord_client.user.id)
+    common.console_print(" We have logged in to Discord!", console_prefix)
+    common.console_print("  Name: " + discord_client.user.name, console_prefix)
+    common.console_print("  ID: " + discord_client.user.id, console_prefix)
 
     try:
         await discord_client.change_presence(game = discord.Game(name = config.discord_playing))
-        common.console_print(console_prefix, "  Playing: " + config.discord_playing)
+        common.console_print("  Playing: " + config.discord_playing, console_prefix)
     except:
-        common.console_print(console_prefix, "  Could not set 'Playing' status for some reason.")
-        common.console_print(console_prefix, " ")
+        common.console_print("  Could not set 'Playing' status for some reason.", console_prefix)
+        common.console_print(" ", console_prefix)
 
     ready = True
 
@@ -60,9 +60,9 @@ async def on_message(message):
         markov_learn = False
 
     if message.channel.is_private:
-        common.console_print(console_prefix, "Direct Message from " + message.author + ": " + message.content)
+        common.console_print("Direct Message from " + message.author + ": " + message.content, console_prefix)
     else:
-        common.console_print(console_prefix, "Message from #" + message.channel.name + ": " + message.content)
+        common.console_print("Message from #" + message.channel.name + ": " + message.content, console_prefix)
 
     split_content = message.clean_content.split()
     command_check = split_content.pop(0)
@@ -76,9 +76,9 @@ async def on_message(message):
     if reply is not "" and reply is not None:
         if config.chat_to_console:
             if message.channel.is_private:
-                common.console_print(console_prefix, "Direct Message to " + message.author + ": " + reply)
+                common.console_print("Direct Message to " + message.author + ": " + reply, console_prefix)
             else:
-                common.console_print(console_prefix, "Message to #" + message.channel.name + ": " + reply)
+                common.console_print("Message to #" + message.channel.name + ": " + reply, console_prefix)
 
         if isinstance(reply, str):
             await discord_client.send_message(message.channel, reply)
@@ -110,13 +110,13 @@ def launch(markov_instance, parent_location, stats_instance):
 def logout():
     if logged_in():
         future = asyncio.run_coroutine_threadsafe(discord_client.logout(), discord_client.loop)
-        common.console_print(console_prefix, "Logging out...")
+        common.console_print("Logging out...", console_prefix)
 
         while logged_in():
             time.sleep(0.25)
 
-    common.console_print(console_prefix, "We are logged out now!")
+    common.console_print("We are logged out now!", console_prefix)
 
 def shutdown():
     logout()
-    common.console_print(console_prefix, "Shutting down client...")
+    common.console_print("Shutting down client...", console_prefix)

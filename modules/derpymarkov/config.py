@@ -1,15 +1,12 @@
 from configparser import SafeConfigParser
-import pkg_resources
 import common
 import os
 
-defaults_file = pkg_resources.resource_string(__name__, "config/defaults.cfg")
-config_file = pkg_resources.resource_string(__name__, "config/config.cfg")
 script_location = os.path.dirname(os.path.abspath(__file__))
 
 config = SafeConfigParser()
-config.read_string(defaults_file.decode())
-config.read_string(config_file.decode())
+config.read(script_location + '/config/defaults.cfg')
+config.read(script_location + '/config/config.cfg')
 
 dictionary_directory = config.get('General', 'dictionary_directory')
 absolute_dictionary_directory = script_location + '/' + dictionary_directory

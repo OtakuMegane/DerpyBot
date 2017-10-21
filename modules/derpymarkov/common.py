@@ -9,7 +9,7 @@ def set_boolean(config_value):
     
     return False
 
-def console_print(prefix, output):
+def console_print(output, prefix = ''):
     print(prefix + output.encode('ascii', 'replace').decode('utf-8', 'ignore'))
 
 def text_file_read(file_location):

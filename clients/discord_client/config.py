@@ -8,6 +8,7 @@ owner_id = ""
 discord_channels = []
 discord_markov_channels = []
 chat_to_console = None
+#TODO: config.has_section, sanity checks
 
 def load(parent_location):
     global bot_token, discord_playing, owner_id, discord_channels, discord_learn_channels, chat_to_console

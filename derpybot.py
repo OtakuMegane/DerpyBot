@@ -26,7 +26,7 @@ shutting_down = False
 console_prefix = "[DerpyBot] "
 
 def commands():
-    common.console_print(console_prefix, "Entering command mode...")
+    common.console_print("Entering command mode...", console_prefix)
 
     while not shutting_down:
         command = input('>> ')
@@ -42,7 +42,7 @@ def commands():
             markov.incoming_console_command(sub_command)
 
         if command == "client status":
-            common.console_print(console_prefix, "Client logged in: " + str(chat_client.logged_in()))
+            common.console_print("Client logged in: " + str(chat_client.logged_in()), console_prefix)
 
         if command == "client reload":
             client_load(True)
@@ -78,10 +78,10 @@ def client_status():
 def client_load(reload):
     global chat_client, client_thread
 
-    common.console_print(console_prefix, "Loading chat client...")
+    common.console_print("Loading chat client...", console_prefix)
 
     if reload:
-        client_shutdown()
+        chat_client.shutdown()
         importlib.reload(chat_client)
     else:
         if use_discord_client:
@@ -97,7 +97,7 @@ def markov_load(reload):
     if not use_markov:
         return
 
-    common.console_print(console_prefix, "Loading markov...")
+    common.console_print("Loading markov...", console_prefix)
 
     if reload:
         importlib.reload(markov)
@@ -116,17 +116,17 @@ def stats_module_load():
 def shutdown():
     global shutting_down
     shutting_down = True
-    common.console_print(console_prefix, "Shutting everything down...")
+    common.console_print("Shutting everything down...", console_prefix)
 
     if not markov.shutting_down:
         markov.shutdown()
 
     chat_client.shutdown()
-    common.console_print(console_prefix, "Good night!")
+    common.console_print("Good night!", console_prefix)
     raise SystemExit
 
 stats_module_load()
-common.console_print(console_prefix, "DerpyBot version " + version)
+common.console_print("DerpyBot version " + version, console_prefix)
 markov_load(False)
 client_load(False)
 

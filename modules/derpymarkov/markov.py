@@ -50,13 +50,13 @@ def activate(reload):
     if reload:
         reload()
 
-    common.console_print(console_prefix, "Loading DerpyMarkov...")
-    common.console_print(console_prefix, "DerpyMarkov version " + version)
+    common.console_print("Loading DerpyMarkov...", console_prefix)
+    common.console_print("DerpyMarkov version " + version, console_prefix)
     input_text = common.text_file_read(config.main_dictionary_file)
     model = derpymodel.DerpyText(input_text, state_size = config.state_size1)
     lines = generate_lines_from_model(True)
     get_statistics(True, False)
-    common.console_print(console_prefix, "Normal reply rate is " + str(config.reply_rate) + " and bot name reply rate is " + str(config.bot_name_reply_rate) + ".")
+    common.console_print("Normal reply rate is " + str(config.reply_rate) + " and bot name reply rate is " + str(config.bot_name_reply_rate) + ".", console_prefix)
     del input_text
     setup_commands()
 
@@ -81,9 +81,9 @@ def get_statistics(print_to_console, return_formatted):
     output.append("We are currently using a state size of " + str(model.state_size) + " which generated " + str(context_count) + " contexts.")
 
     if print_to_console:
-        common.console_print(console_prefix, output[0])
-        common.console_print(console_prefix, output[1])
-        common.console_print(console_prefix, output[2])
+        common.console_print(output[0], console_prefix)
+        common.console_print(output[1], console_prefix)
+        common.console_print(output[2], console_prefix)
 
     if return_formatted:
         return "\n".join(output)
@@ -107,7 +107,7 @@ def incoming_console_command(command):
         get_statistics(True, False)
 
     if command == 'version':
-        common.console_print(console_prefix, "derpymarkov " + version)
+        common.console_print("derpymarkov " + version, console_prefix)
 
 def incoming_message_command(command):
     if command == 'statistics':
@@ -320,22 +320,22 @@ def save():
     if not unsaved:
         return
 
-    common.console_print(console_prefix, "Saving lines...")
+    common.console_print("Saving lines...", console_prefix)
 
     if os.path.exists(config.main_dictionary_file) and not os.path.isfile(config.main_dictionary_file):
-        common.console_print(console_prefix, "Error! " + config.main_dictionary_filename + " exists but is not a valid file. Cannot save lines.")
+        common.console_print("Error! " + config.main_dictionary_filename + " exists but is not a valid file. Cannot save lines.", console_prefix)
         return
     
     if not os.path.exists(config.main_dictionary_file):
         os.makedirs(config.absolute_dictionary_directory, exist_ok=True)
-        common.console_print(console_prefix, config.main_dictionary_filename + " was not found. Creating new file...")
+        common.console_print(config.main_dictionary_filename + " was not found. Creating new file...", console_prefix)
 
     with threading.Lock():
         with open(config.main_dictionary_file, '+w', encoding = "utf8") as text:
             text.write('\n'.join(sorted(lines)))
             text.close()
 
-    common.console_print(console_prefix, "Lines saved!")
+    common.console_print("Lines saved!", console_prefix)
     unsaved = False
 
 def shutdown():
@@ -347,7 +347,7 @@ def shutdown():
     shutting_down = True
     save()
     del model
-    common.console_print(console_prefix, "DerpyMarkov is shutting down now.")
+    common.console_print("DerpyMarkov is shutting down now.", console_prefix)
     return True
 
 def timed_loop():
