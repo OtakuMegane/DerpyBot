@@ -20,7 +20,7 @@ def pass_data(markov_instance, discord_config, stats_instance):
     derpy_stats = stats_instance
 
 def list_commands():
-    command_list = ["__Discord Commands__"]
+    command_list = []
 
     for command in commands:
         if commands[command]['base_command'] is None:
@@ -36,6 +36,7 @@ def list_commands():
                 
             command_list[command_list.index(command)] = command + aliased + description
     
+    command_list.insert(0, ["__Discord Commands__"])
     command_output = '**\n**'.join(sorted(command_list))
     markov_commands = markov.get_command_list()
     markov_command_list = []
@@ -98,7 +99,7 @@ def get_commands(message, split_content):
     if 'commands' in split_content[0]:
         return list_commands()
     
-    if 'reload commands' and message.author.id == config.owner_id:
+    if 'reload commands' in rejoined and message.author.id == config.owner_id:
         load_custom_commands(True, parent_location)
         return "Commands have been reloaded!"
         
