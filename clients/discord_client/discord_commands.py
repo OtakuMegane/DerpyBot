@@ -36,8 +36,8 @@ def list_commands():
                 
             command_list[command_list.index(command)] = command + aliased + description
     
-    command_list.insert(0, ["__Discord Commands__"])
-    command_output = '**\n**'.join(sorted(command_list))
+    command_list.insert(0, "__Discord Commands__")
+    command_output = '**\n**'.join(sorted(command_list, key=str.lower))
     markov_commands = markov.get_command_list()
     markov_command_list = []
     
