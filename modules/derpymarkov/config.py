@@ -20,6 +20,7 @@ save_interval = int(config.get('General', 'save_interval'))
 
 reply_rate = float(config.get('Reply', 'reply_rate'))
 bot_name_reply_rate = float(config.get('Reply', 'bot_name_reply_rate'))
+reply_queue = common.set_boolean(config.get('Reply', 'reply_queue'))
 
 sentence_max_words = int(config.get('Sentence', 'sentence_max_words'))
 test_output = common.set_boolean(config.get('Sentence', 'test_output'))

@@ -43,7 +43,7 @@ async def on_ready():
     ready = True
 
 @discord_client.event
-async def on_message(message):
+async def on_message(message): 
     reply = None
     markov_learn = True
 
@@ -87,7 +87,7 @@ async def on_message(message):
 
 def launch(markov_instance, parent_location, stats_instance):
     global markov, derpy_stats
-    
+
     config.load(parent_location)
     markov = markov_instance
     derpy_stats = stats_instance

@@ -10,7 +10,7 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.3.1'
+version = '0.9.3.2'
 
 model = None
 unsaved = False
@@ -34,6 +34,7 @@ line_count = 0
 word_count = 0
 context_count = 0
 console_prefix = "[DerpyMarkov] "
+doing_chain = False
 
 def reload():
     importlib.reload(config)
@@ -43,9 +44,10 @@ def activate(reload):
     Load and initialize everything then get markov running.
     """
 
-    global model, lines, main_, shutting_down
+    global model, lines, main_, shutting_down, doing_chain
 
     shutting_down = False
+    doing_chain = False
 
     if reload:
         reload()
@@ -129,13 +131,19 @@ def incoming_message(message, client_name, do_learn):
     client_name: The current name of the client sending content.
     """
 
+    global doing_chain
+
     if not isinstance(message, str) or message == "" or message is None:
         return None
+
+    while doing_chain:
+        time.sleep(0.05)
 
     make_reply = False
     bot_named = False
     bot_paged = False
-
+    doing_chain = True
+    reply = None
     split_message = message.split()
     name_fold = client_name.casefold()
 
@@ -152,6 +160,7 @@ def incoming_message(message, client_name, do_learn):
                 bot_named = True
 
     prepared_message = prepare_message(message)
+
     if do_learn:
         learn(prepared_message)
 
@@ -164,9 +173,9 @@ def incoming_message(message, client_name, do_learn):
 
     if make_reply:
         reply = compose_reply(prepared_message)
-        return reply
 
-    return None
+    doing_chain = False
+    return reply
 
 def prepare_message(message):
     """
