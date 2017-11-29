@@ -334,9 +334,9 @@ def save():
     if os.path.exists(config.main_dictionary_file) and not os.path.isfile(config.main_dictionary_file):
         common.console_print("Error! " + config.main_dictionary_filename + " exists but is not a valid file. Cannot save lines.", console_prefix)
         return
-    
+
     if not os.path.exists(config.main_dictionary_file):
-        os.makedirs(config.absolute_dictionary_directory, exist_ok=True)
+        os.makedirs(config.absolute_dictionary_directory, exist_ok = True)
         common.console_print(config.main_dictionary_filename + " was not found. Creating new file...", console_prefix)
 
     with threading.Lock():

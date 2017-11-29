@@ -8,10 +8,10 @@ import re
 import os
 import datetime
 
-version = '0.9.3'
+version = '0.9.3.1'
 
 script_location = os.path.dirname(os.path.abspath(__file__))
-config = SafeConfigParser(allow_no_value=True)
+config = SafeConfigParser(allow_no_value = True)
 config.read(script_location + '/config/defaults.cfg')
 config.read(script_location + '/config/config.cfg')
 
@@ -107,10 +107,10 @@ def markov_load(reload):
         markov = importlib.import_module('modules.' + markov_package + '.' + markov_module)
 
     markov.activate(reload)
-    
+
 def stats_module_load():
     global derpy_stats
-    
+
     derpy_stats = importlib.import_module('derpy_stats')
 
 def shutdown():

@@ -43,7 +43,7 @@ async def on_ready():
     ready = True
 
 @discord_client.event
-async def on_message(message): 
+async def on_message(message):
     reply = None
     markov_learn = True
 

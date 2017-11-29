@@ -33,36 +33,36 @@ def list_commands():
 
             if commands[command]['description'] is not None:
                 description = "**  " + commands[command]['description'] + "** "
-                
+
             command_list[command_list.index(command)] = command + aliased + description
-    
+
     command_list.insert(0, "__Discord Commands__")
-    command_output = '**\n**'.join(sorted(command_list, key=str.lower))
+    command_output = '**\n**'.join(sorted(command_list, key = str.lower))
     markov_commands = markov.get_command_list()
     markov_command_list = []
-    
+
     if markov_commands:
         markov_command_list.append("\n")
         markov_command_list.append("__Markov Commands__ (markov <command>)")
-    
+
     for command in markov_commands:
         description = ""
-        
+
         if markov_commands[command]['description'] is not None:
             description = "**  " + markov_commands[command]['description'] + "** "
-            
+
         markov_command_list.append(command + description)
 
     command_output += '**\n**'.join(sorted(markov_command_list))
-    
+
     return "**" + command_output + "**"
 
 def load_custom_commands(reload, script_location):
     global commands, parent_location
-    
+
     if parent_location is None:
         parent_location = script_location
-    
+
     if reload:
         commands = defaultdict(dict)
 
@@ -84,7 +84,7 @@ def load_custom_commands(reload, script_location):
             for alternate in alternates:
                 alternate = alternate.strip()
                 commands[alternate]['base_command'] = section
-                
+
         if config.has_option(section, 'description'):
             commands[section]['description'] = config.get(section, 'description')
 
@@ -98,11 +98,11 @@ def get_commands(message, split_content):
 
     if 'commands' in split_content[0]:
         return list_commands()
-    
+
     if 'reload commands' in rejoined and message.author.id == config.owner_id:
         load_custom_commands(True, parent_location)
         return "Commands have been reloaded!"
-        
+
     if 'uptime' in split_content[0]:
         bot_start_time = derpy_stats.retrieve_stats('derpybot', 'start_time')
         uptime_delta = datetime.datetime.now() - bot_start_time

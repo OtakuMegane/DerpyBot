@@ -17,14 +17,13 @@ class DerpyText(markovify.Text):
         in a randomly-generated sentence. 
         """
         if len(sentence.strip()) == 0: return False
-        #reject_pat = re.compile(r"(^')|('$)|\s'|'\s|[\"(\(\)\[\])]")
+        # reject_pat = re.compile(r"(^')|('$)|\s'|'\s|[\"(\(\)\[\])]")
         reject_pat = re.compile(r"(?!)")
         # Decode unicode, mainly to normalize fancy quotation marks
-        if sentence.__class__.__name__ == "str": # pragma: no cover
+        if sentence.__class__.__name__ == "str":  # pragma: no cover
             decoded = sentence
-        else: # pragma: no cover
+        else:  # pragma: no cover
             decoded = unidecode(sentence)
         # Sentence shouldn't contain problematic characters
         if re.search(reject_pat, decoded): return False
         return True
-    
