@@ -23,5 +23,5 @@ def load(parent_location):
     for channel in config.get('Discord', 'channels').split(','):
         discord_channels.append(channel.strip())
 
-    for channel in config.get('Discord', 'learn-channels').split(','):
+    for channel in config.get('Discord', 'markov-channels').split(','):
         discord_markov_channels.append(channel.strip())
