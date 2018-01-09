@@ -5,6 +5,7 @@ config = SafeConfigParser()
 bot_token = ""
 discord_playing = ""
 owner_id = ""
+command_alias = ""
 discord_channels = []
 discord_markov_channels = []
 chat_to_console = None
@@ -15,6 +16,7 @@ def load(parent_location):
     
     config.read(parent_location + '/config/defaults.cfg')
     config.read(parent_location + '/config/config.cfg')
+    command_alias = config.get('Discord', 'command_alias')
     bot_token = config.get('Discord', 'token')
     discord_playing = config.get('Discord', 'playing')
     owner_id = config.get('Discord', 'owner_id')

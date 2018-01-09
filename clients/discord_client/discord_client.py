@@ -9,7 +9,7 @@ from . import config
 import os
 import common
 
-version = '0.9.2.1'
+version = '0.9.2.3'
 
 discord_client = discord.Client()
 ready = False
@@ -67,7 +67,7 @@ async def on_message(message):
     split_content = message.clean_content.split()
     command_check = split_content.pop(0)
 
-    if '!derpy' in command_check:
+    if config.command_alias in command_check:
         reply = discord_commands.get_commands(message, split_content)
     else:
         if markov is not None:
