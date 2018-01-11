@@ -99,7 +99,7 @@ def get_commands(message, split_content):
     if 'commands' in split_content[0]:
         return list_commands()
 
-    if 'reload commands' in rejoined and message.author.id == config.owner_id:
+    if 'reload commands' in rejoined and message.author.id in config.owner_ids:
         load_custom_commands(True, parent_location)
         return "Commands have been reloaded!"
 

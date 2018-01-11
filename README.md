@@ -8,7 +8,7 @@ A chat bot with a learning markov chain module. Originally created because there
  - [discord.py](https://github.com/Rapptz/discord.py)
  
 ## Basic Setup ##
-Basic configuration is pretty easy. In the main `config` folder, rename `config.cfg.example` to `config.cfg` then adjust settings as needed for your installation. The only settings that **must** be changed are `owner_id` and `token` as these are necessary for using with Discord. `defaults.cfg` contains documentation on what each of the settings does as well as the default value.
+Basic configuration is pretty easy. In the main `config` folder, rename `config.cfg.example` to `config.cfg` then adjust settings as needed for your installation. The only settings that **must** be changed are `owner_ids` and `token` as these are necessary for using with Discord. `defaults.cfg` contains documentation on what each of the settings does as well as the default value.
 
 ## Markov Setup ##
 The derpymarkov module has its own settings. Similar to the basic configuration, go to the `derpymarkov/config` folder and rename `config.cfg.example` to `config.cfg` then change any settings you like. Again `defaults.cfg` contains documentation for the settings.

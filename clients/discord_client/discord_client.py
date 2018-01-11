@@ -9,7 +9,7 @@ from . import config
 import os
 import common
 
-version = '0.9.2.4'
+version = '0.9.2.5'
 
 discord_client = discord.Client()
 ready = False
