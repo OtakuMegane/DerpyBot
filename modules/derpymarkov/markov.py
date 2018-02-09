@@ -10,7 +10,7 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.3.2'
+version = '0.9.3.3'
 
 model = None
 unsaved = False
@@ -251,7 +251,7 @@ def get_sentence(words, key_phrase):
 
     try:
         for word in wordlist:
-            attempt = model.make_sentence_with_start(word, **test_kwargs)
+            attempt = model.make_sentence_with_start(word, strict = False, **test_kwargs)
             if attempt is not None:
                 # print("found start! " + word + "  " + str(counter))  # Early debug. Remove this
                 return attempt

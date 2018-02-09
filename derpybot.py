@@ -8,7 +8,7 @@ import re
 import os
 import datetime
 
-version = '0.9.3.2'
+version = '0.9.3.3'
 
 script_location = os.path.dirname(os.path.abspath(__file__))
 config = SafeConfigParser(allow_no_value = True)
