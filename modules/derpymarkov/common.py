@@ -20,4 +20,7 @@ def text_file_read(file_location):
             file_input = text.read()
             text.close()
 
+    if not file_input:
+        file_input = 'derp'
+
     return file_input
