@@ -102,6 +102,9 @@ def get_command_list():
     return commands
 
 def incoming_console_command(command):
+    if shutting_down:
+        return None
+
     if command == 'shutdown':
         shutdown()
 
@@ -112,6 +115,9 @@ def incoming_console_command(command):
         common.console_print("derpymarkov " + version, console_prefix)
 
 def incoming_message_command(command):
+    if shutting_down:
+        return None
+
     if command == 'statistics':
         stats = get_statistics(False, True)
         return stats
@@ -126,12 +132,15 @@ def incoming_message(message, client_name, do_learn):
     The primary input function. At present any content from outside classes or
     modules comes through here. A reply is returned if warranted, otherwise
     returns None.
-    
+
     message: The content being passed to DerpyMarkov. Should be a string.
     client_name: The current name of the client sending content.
     """
 
     global doing_chain
+
+    if shutting_down:
+        return None
 
     if not isinstance(message, str) or message == "" or message is None:
         return None
