@@ -10,7 +10,7 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.3.4'
+version = '0.9.3.5'
 
 model = None
 unsaved = False
@@ -39,6 +39,12 @@ doing_chain = False
 def reload():
     importlib.reload(config)
 
+def accepting_input():
+    if not shutting_down:
+        return True
+    
+    return False
+    
 def activate(reload):
     """
     Load and initialize everything then get markov running.
@@ -102,8 +108,8 @@ def get_command_list():
     return commands
 
 def incoming_console_command(command):
-    if shutting_down:
-        return None
+    if not accepting_input():
+        return
 
     if command == 'shutdown':
         shutdown()
@@ -115,7 +121,7 @@ def incoming_console_command(command):
         common.console_print("derpymarkov " + version, console_prefix)
 
 def incoming_message_command(command):
-    if shutting_down:
+    if not accepting_input():
         return None
 
     if command == 'statistics':
@@ -139,7 +145,7 @@ def incoming_message(message, client_name, do_learn):
 
     global doing_chain
 
-    if shutting_down:
+    if not accepting_input():
         return None
 
     if not isinstance(message, str) or message == "" or message is None:
