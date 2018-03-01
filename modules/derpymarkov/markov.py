@@ -42,9 +42,9 @@ def reload():
 def accepting_input():
     if not shutting_down:
         return True
-    
+
     return False
-    
+
 def activate(reload):
     """
     Load and initialize everything then get markov running.
@@ -200,7 +200,7 @@ def prepare_message(message):
     message = message.replace('"', '')
     split_message = message.split()
 
-    # Check for case-sentsitive things such as URIs and preserve them
+    # Check for case-sensitive things such as URIs and preserve them
     for index, substring in enumerate(split_message):
         if not uri_regex.match(substring)\
         and not emoticon_regex.match(substring)\
@@ -259,7 +259,6 @@ def get_sentence(words, key_phrase):
             if config.use_keywords:
                 for word in wordlist:
                     if re.search(r'\b' + re.escape(word) + r'\b', attempt, re.IGNORECASE):
-                        # print("found one! " + word + "  " + str(counter))  # Early debug. Remove this
                         return attempt
             else:
                 return attempt
@@ -268,7 +267,6 @@ def get_sentence(words, key_phrase):
         for word in wordlist:
             attempt = model.make_sentence_with_start(word, strict = False, **test_kwargs)
             if attempt is not None:
-                # print("found start! " + word + "  " + str(counter))  # Early debug. Remove this
                 return attempt
     except KeyError:
         attempt = None
@@ -306,7 +304,10 @@ def learn(text):
 
     parsed_sentences = list(model.generate_corpus(text))
     lines.extend(list(map(model.word_join, parsed_sentences)))
-    update_stats(parsed_sentences)
+
+    if config.update_stats_on_learn:
+        update_stats(parsed_sentences)
+
     new_model = derpymodel.DerpyText(text, state_size = config.state_size1)
     model = markovify.combine([ model, new_model ])
 

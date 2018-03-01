@@ -21,6 +21,7 @@ if config.has_section('General'):
     state_size1 = int(config.get('General', 'state_size'))
     learn = common.set_boolean(config.get('General', 'learn'))
     save_interval = int(config.get('General', 'save_interval'))
+    update_stats_on_learn = common.set_boolean(config.get('General', 'update_stats_on_learn'))
 
 if config.has_section('Reply'):
     reply_rate = float(config.get('Reply', 'reply_rate'))
