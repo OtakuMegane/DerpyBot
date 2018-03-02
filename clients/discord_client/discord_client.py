@@ -9,7 +9,7 @@ from . import config
 import os
 import common
 
-version = '0.9.2.5'
+version = '0.9.2.6'
 
 discord_client = discord.Client()
 ready = False
@@ -47,21 +47,23 @@ async def on_message(message):
     reply = None
     markov_learn = True
 
-    if message.channel.name not in config.discord_channels:
-        return
-
     if message.author.bot or message.author == discord_client.user:
         return
 
     if message.content is "" or message.content is None:
         return
 
-    if message.channel.name not in config.discord_markov_channels:
-        markov_learn = False
-
     if message.channel.is_private:
-        common.console_print("Direct Message from " + message.author + ": " + message.content, console_prefix)
+        if config.markov_learn_pm:
+            markov_learn = True
+
+        common.console_print("Direct Message from " + message.author.name + ": " + message.content, console_prefix)
     else:
+        if message.channel.name not in config.discord_channels:
+            return
+        if message.channel.name not in config.discord_markov_channels:
+            markov_learn = False
+
         common.console_print("Message from #" + message.channel.name + ": " + message.content, console_prefix)
 
     split_content = message.clean_content.split()

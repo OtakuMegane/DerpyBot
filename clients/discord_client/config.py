@@ -11,6 +11,7 @@ owner_ids = []
 command_alias = ""
 discord_channels = []
 discord_markov_channels = []
+markov_learn_pm = None
 chat_to_console = None
 
 def load(parent_location):
@@ -34,3 +35,5 @@ def load(parent_location):
 
         for channel in config.get('Discord', 'markov-channels').split(','):
             discord_markov_channels.append(channel.strip())
+            
+        markov_learn_pm = common.set_boolean(config.get('Markov', 'markov_learn_pm'))
