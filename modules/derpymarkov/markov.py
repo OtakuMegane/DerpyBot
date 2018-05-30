@@ -10,7 +10,7 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.3.6'
+version = '0.9.3.7'
 
 model = None
 unsaved = False
@@ -246,6 +246,7 @@ def get_sentence(words, key_phrase):
                 wordlist = key_phrase
 
     counter = 0
+    final_sentence = None
 
     while counter < config.sentence_with_key_tries:
         counter += 1
@@ -259,20 +260,53 @@ def get_sentence(words, key_phrase):
             if config.use_keywords:
                 for word in wordlist:
                     if re.search(r'\b' + re.escape(word) + r'\b', attempt, re.IGNORECASE):
-                        return attempt
+                        final_sentence = attempt
             else:
-                return attempt
+                final_sentence = attempt
+        
+        if final_sentence is not None:
+            break
 
     try:
         for word in wordlist:
-            attempt = model.make_sentence_with_start(word, strict = False, **test_kwargs)
-            if attempt is not None:
-                return attempt
+            final_sentence = model.make_sentence_with_start(word, strict = False, **test_kwargs)
     except KeyError:
-        attempt = None
+        final_sentence = None
 
-    return None
+    if final_sentence is not None:
+        final_sentence = clean_up_punctuation(final_sentence)
+        
+    return final_sentence
 
+def clean_up_punctuation(sentence):
+    sentence_fragments = model.word_split(sentence)
+    unmatched_open = -1
+    unmatched_close = -1
+    
+    for index, fragment in enumerate(sentence_fragments, start = 1):
+        if '(' in fragment:
+            unmatched_open = index - 1
+        
+        if ')' in fragment:
+            if unmatched_open is not -1:
+                unmatched_open = -1
+            else:
+                unmatched_close = index - 1
+
+    if unmatched_open is not -1:
+        random_index = random.randrange(unmatched_open + 1, len(sentence_fragments))
+        sentence_fragments[random_index] = sentence_fragments[random_index] + ')'
+        
+    if unmatched_close is not -1:
+        if unmatched_close < 2:
+            sentence_fragments[unmatched_close] = '(' + sentence_fragments[unmatched_close]
+        else:
+            random_index = random.randrange(0, unmatched_close - 1)
+            sentence_fragments[random_index] = sentence_fragments[random_index] + '('
+        
+    sentence = ' '.join(sentence_fragments)
+    return sentence
+    
 def compose_reply(message):
     key_phrase = None
     sentence = None
