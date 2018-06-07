@@ -12,17 +12,19 @@ import common
 version = '0.9.2.6'
 
 discord_client = discord.Client()
+discordpy_legacy = discord.version_info[0] < 1
 ready = False
 markov = None
 derpy_stats = None
 console_prefix = "[Discord] "
+logged_in = False
 
 def logged_in():
-    return discord_client.is_logged_in
+    return logged_in
 
 def still_running(print):
     if print:
-        common.console_print("Client still running! Logged in? " + logged_in(), console_prefix)
+        common.console_print("Client still running! Logged in? " + str(logged_in()), console_prefix)
     return True
 
 @discord_client.event
@@ -31,7 +33,7 @@ async def on_ready():
 
     common.console_print(" We have logged in to Discord!", console_prefix)
     common.console_print("  Name: " + discord_client.user.name, console_prefix)
-    common.console_print("  ID: " + discord_client.user.id, console_prefix)
+    common.console_print("  ID: " + str(discord_client.user.id), console_prefix)
 
     try:
         await discord_client.change_presence(game = discord.Game(name = config.discord_playing))
@@ -46,6 +48,7 @@ async def on_ready():
 async def on_message(message):
     reply = None
     markov_learn = True
+    private_channel = False
 
     if message.author.bot or message.author == discord_client.user:
         return
@@ -53,7 +56,12 @@ async def on_message(message):
     if message.content is "" or message.content is None:
         return
 
-    if message.channel.is_private:
+    if discordpy_legacy:
+        private_channel = message.channel.is_private
+    else:
+        private_channel = isinstance(message.channel, discord.abc.PrivateChannel)
+
+    if private_channel:
         if config.markov_learn_pm:
             markov_learn = True
 
@@ -110,15 +118,10 @@ def launch(markov_instance, parent_location, stats_instance):
             pass
 
 def logout():
-    if logged_in():
-        future = asyncio.run_coroutine_threadsafe(discord_client.logout(), discord_client.loop)
-        common.console_print("Logging out...", console_prefix)
-
-        while logged_in():
-            time.sleep(0.25)
-
-    common.console_print("We are logged out now!", console_prefix)
+    future = asyncio.run_coroutine_threadsafe(discord_client.close(), discord_client.loop)
+    common.console_print("Logging out...", console_prefix)
 
 def shutdown():
-    logout()
+    if logged_in:
+        logout()
     common.console_print("Shutting down client...", console_prefix)

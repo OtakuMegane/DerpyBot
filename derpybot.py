@@ -42,7 +42,7 @@ def commands():
             markov.incoming_console_command(sub_command)
 
         if command == "client status":
-            common.console_print("Client logged in: " + str(chat_client.logged_in()), console_prefix)
+            chat_client.still_running(True)
 
         if command == "client reload":
             client_load(True)
