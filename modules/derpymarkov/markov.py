@@ -10,7 +10,7 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.3.7'
+version = '0.9.3.8'
 
 model = None
 unsaved = False
@@ -247,7 +247,7 @@ def get_sentence(words, key_phrase):
 
     counter = 0
     final_sentence = None
-
+    
     while counter < config.sentence_with_key_tries:
         counter += 1
 
@@ -258,20 +258,24 @@ def get_sentence(words, key_phrase):
 
         if attempt is not None:
             if config.use_keywords:
-                for word in wordlist:
-                    if re.search(r'\b' + re.escape(word) + r'\b', attempt, re.IGNORECASE):
-                        final_sentence = attempt
+                if final_sentence is None:
+                    for word in wordlist:
+                        if re.search(r'\b' + re.escape(word) + r'\b', attempt, re.IGNORECASE) is not None:
+                            final_sentence = attempt
+                            break
             else:
                 final_sentence = attempt
-        
-        if final_sentence is not None:
-            break
+                break
 
-    try:
-        for word in wordlist:
-            final_sentence = model.make_sentence_with_start(word, strict = False, **test_kwargs)
-    except KeyError:
-        final_sentence = None
+    if final_sentence is None:
+        try:
+            for word in wordlist:
+                final_sentence = model.make_sentence_with_start(word, strict = False, **test_kwargs)
+                
+                if final_sentence is not None:
+                    break
+        except KeyError:
+            final_sentence = None
 
     if final_sentence is not None:
         final_sentence = clean_up_punctuation(final_sentence)
