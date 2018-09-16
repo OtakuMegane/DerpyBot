@@ -10,7 +10,7 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.3.8'
+version = '0.9.3.9'
 
 model = None
 unsaved = False
@@ -298,9 +298,13 @@ def clean_up_punctuation(sentence):
                 unmatched_close = index - 1
 
     if unmatched_open is not -1:
-        random_index = random.randrange(unmatched_open + 1, len(sentence_fragments))
+        if len(sentence_fragments) >= unmatched_open + 1:
+            random_index = random.randrange(unmatched_open + 1, len(sentence_fragments))
+        else:
+            random_index = len(sentence_fragments);
+
         sentence_fragments[random_index] = sentence_fragments[random_index] + ')'
-        
+
     if unmatched_close is not -1:
         if unmatched_close < 2:
             sentence_fragments[unmatched_close] = '(' + sentence_fragments[unmatched_close]
