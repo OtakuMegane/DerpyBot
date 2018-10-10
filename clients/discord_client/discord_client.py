@@ -9,7 +9,7 @@ from . import config
 import os
 import common
 
-version = '0.9.2.6'
+version = '0.9.2.7'
 
 discord_client = discord.Client()
 discordpy_legacy = discord.version_info[0] < 1
@@ -105,6 +105,7 @@ def launch(markov_instance, parent_location, stats_instance):
     discord_commands.load_custom_commands(False, parent_location)
 
     try:
+        asyncio.set_event_loop(discord_client.loop)
         discord_client.loop.run_until_complete(discord_client.start(config.bot_token))
     except KeyboardInterrupt:
         discord_client.loop.run_until_complete(discord_client.logout())
