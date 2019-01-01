@@ -9,7 +9,7 @@ from . import config
 import os
 import common
 
-version = '0.9.2.7'
+version = '0.9.2.8'
 
 discord_client = discord.Client()
 discordpy_legacy = discord.version_info[0] < 1
@@ -94,6 +94,17 @@ async def on_message(message):
             await discord_client.send_message(message.channel, reply)
         else:
             await discord_client.send_message(message.channel, embed = reply)
+
+@discord_client.event
+async def on_channel_update(before, after):
+    if after.name != before.name:
+        if before.name in config.discord_channels and after.name not in config.discord_channels:
+            config.discord_channels.append(after.name)
+        
+        if before.name in config.discord_markov_channels and after.name not in config.discord_markov_channels:
+            config.discord_markov_channels.append(after.name)
+            
+        common.console_print("Channel #" + before.name + " has changed to #" + after.name, console_prefix)
 
 def launch(markov_instance, parent_location, stats_instance):
     global markov, derpy_stats
