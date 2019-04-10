@@ -127,6 +127,23 @@ def shutdown():
 
 stats_module_load()
 common.console_print("DerpyBot version " + version, console_prefix)
+
+#These try commands check if config files are present, because if \config\config.cfg file is not present program will crash.
+try:
+    fh = open(script_location + '/config/config.cfg', 'r')
+    # check to see if config exists
+except FileNotFoundError:
+	common.console_print("'\config\config.cfg' not found!!! Shutting down...")
+	exit()
+    # Inform user config does not exist, then stops the program
+	
+try:
+    fh = open(script_location + '\modules\derpymarkov\config\config.cfg', 'r')
+    # check to see if config exists
+except FileNotFoundError:
+	common.console_print("'\modules\derpymarkov\config\config.cfg' not found. Program will still function but that might cause problems!")
+    # Inform user config does not exist
+
 markov_load(False)
 client_load(False)
 
