@@ -1,5 +1,5 @@
 from threading import Thread
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 import common
 import time
 import importlib
@@ -11,7 +11,7 @@ import datetime
 version = '0.9.3.7'
 
 script_location = os.path.dirname(os.path.abspath(__file__))
-config = SafeConfigParser(allow_no_value = True)
+config = ConfigParser(allow_no_value = True)
 config.read(script_location + '/config/defaults.cfg')
 config.read(script_location + '/config/config.cfg')
 
