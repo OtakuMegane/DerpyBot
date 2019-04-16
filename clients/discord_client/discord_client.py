@@ -85,7 +85,7 @@ async def on_message(message):
 
     if reply is not "" and reply is not None:
         if config.chat_to_console:
-            if message.channel.is_private:
+            if isinstance(message.channel, discord.abc.PrivateChannel):
                 common.console_print("Direct Message to " + message.author + ": " + reply, console_prefix)
             else:
                 common.console_print("Message to #" + message.channel.name + ": " + reply, console_prefix)
