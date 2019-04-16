@@ -2,7 +2,7 @@ import asyncio
 import discord
 import threading
 import time
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 import importlib
 from . import discord_commands
 from . import config
