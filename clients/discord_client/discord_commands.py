@@ -68,11 +68,17 @@ def load_custom_commands(reload, script_location):
 
     config = SafeConfigParser()
     commands_input = common.text_file_read(parent_location + '/config/custom_discord_commands.cfg')
-    config.read_string(commands_input)
+    dummy_name = "derpy_dummy_asdfg" # Avoiding no sections error
+    config.read_string("[" + dummy_name + "]" + commands_input) 
     sections = config.sections()
 
     for section in sections:
-        commands[section]['content'] = config.get(section, 'content')
+        if dummy_name in section:
+            continue
+        
+        if config.has_option(section, 'content'):
+            commands[section]['content'] = config.get(section, 'content')
+
         commands[section]['base_command'] = None
         commands[section]['aliases'] = None
         commands[section]['description'] = None

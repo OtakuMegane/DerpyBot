@@ -10,7 +10,7 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.3.9'
+version = '0.9.3.10'
 
 model = None
 unsaved = False
@@ -50,7 +50,7 @@ def activate(reload):
     Load and initialize everything then get markov running.
     """
 
-    global model, lines, main_, shutting_down, doing_chain
+    global model, lines, main_dictionary_file, shutting_down, doing_chain
 
     shutting_down = False
     doing_chain = False
@@ -58,8 +58,8 @@ def activate(reload):
     if reload:
         reload()
 
-    common.console_print("Loading DerpyMarkov...", console_prefix)
     common.console_print("DerpyMarkov version " + version, console_prefix)
+    common.console_print("Loading main dictionary...", console_prefix)
     input_text = common.text_file_read(config.main_dictionary_file)
     model = derpymodel.DerpyText(input_text, state_size = config.state_size1)
     lines = generate_lines_from_model(True)

@@ -9,14 +9,14 @@ from . import config
 import os
 import common
 
-version = '0.9.2.8'
+version = '0.9.2.9'
 
 discord_client = discord.Client()
 discordpy_legacy = discord.version_info[0] < 1
 ready = False
 markov = None
 derpy_stats = None
-console_prefix = "[Discord] "
+console_prefix = "[Discord Client] "
 logged_in = False
 
 def logged_in():
@@ -86,7 +86,7 @@ async def on_message(message):
     if reply is not "" and reply is not None:
         if config.chat_to_console:
             if message.channel.is_private:
-                common.console_print("Direct Message to " + message.author + ": " + reply, console_prefix)
+                common.console_print("Direct Message to " + message.author.name + ": " + reply, console_prefix)
             else:
                 common.console_print("Message to #" + message.channel.name + ": " + reply, console_prefix)
 
@@ -109,6 +109,7 @@ async def on_channel_update(before, after):
 def launch(markov_instance, parent_location, stats_instance):
     global markov, derpy_stats
 
+    common.console_print("Discord Client version " + version, console_prefix)
     config.load(parent_location)
     markov = markov_instance
     derpy_stats = stats_instance
