@@ -2,7 +2,7 @@ import asyncio
 import discord
 import threading
 import time
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 import importlib
 from . import discord_commands
 from . import config
@@ -86,7 +86,7 @@ async def on_message(message):
     if reply is not "" and reply is not None:
         if config.chat_to_console:
             if message.channel.is_private:
-                common.console_print("Direct Message to " + message.author.name + ": " + reply, console_prefix)
+                common.console_print("Direct Message to " + message.author + ": " + reply, console_prefix)
             else:
                 common.console_print("Message to #" + message.channel.name + ": " + reply, console_prefix)
 
