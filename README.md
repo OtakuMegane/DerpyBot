@@ -3,9 +3,9 @@
 A chat bot with a learning markov chain module. Originally created because there was no Discord equivalent to the [markovsky-irc bot](https://sourceforge.net/projects/markovsky/). While markov chat bots exist for Discord, all that were found at the time only took manual input at startup and didn't consider words or phrases from the actual chat they were triggered by.
 
 ## Requirements ##
- - Python 3.5+ 
+ - Python 3.5.3+ 
  - [markovify](https://github.com/jsvine/markovify)
- - [discord.py](https://github.com/Rapptz/discord.py)
+ - [discord.py 0.16+](https://github.com/Rapptz/discord.py)
  
 ## Basic Setup ##
 Basic configuration is pretty easy. In the main `config` folder, rename `config.cfg.example` to `config.cfg` then adjust settings as needed for your installation. The only settings that **must** be changed are `owner_ids` and `token` as these are necessary for using with Discord. `defaults.cfg` contains documentation on what each of the settings does as well as the default value.
