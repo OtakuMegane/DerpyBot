@@ -9,7 +9,7 @@ from . import config
 import os
 import common
 
-version = '0.9.2.9'
+version = '0.9.2.10'
 
 discord_client = discord.Client()
 discordpy_legacy = discord.version_info[0] < 1
