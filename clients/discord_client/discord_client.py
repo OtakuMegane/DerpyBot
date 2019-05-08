@@ -47,8 +47,8 @@ async def on_ready():
 @discord_client.event
 async def on_message(message):
     reply = None
-    markov_learn = True
-    private_channel = False
+    markov_learn = config.markov_learn_pm
+    bot_mentioned = discord_client.user in message.mentions
 
     if message.author.bot or message.author == discord_client.user:
         return
@@ -57,14 +57,12 @@ async def on_message(message):
         return
 
     if discordpy_legacy:
-        private_channel = message.channel.is_private
+        is_private = message.channel.is_private
     else:
-        private_channel = isinstance(message.channel, discord.abc.PrivateChannel)
+        is_private = isinstance(message.channel, discord.abc.PrivateChannel)
 
-    if private_channel:
-        if config.markov_learn_pm:
-            markov_learn = True
-
+    if is_private:
+        bot_mentioned = True
         common.console_print("Direct Message from " + message.author.name + ": " + message.content, console_prefix)
     else:
         if message.channel.name not in config.discord_channels:
@@ -81,19 +79,25 @@ async def on_message(message):
         reply = discord_commands.get_commands(message, split_content)
     else:
         if markov is not None:
-            reply = markov.incoming_message(message.clean_content, discord_client.user.name, markov_learn)
+            reply = markov.incoming_message(message.clean_content, discord_client.user.name, bot_mentioned, markov_learn)
 
     if reply is not "" and reply is not None:
         if config.chat_to_console:
-            if message.channel.is_private:
-                common.console_print("Direct Message to " + message.author + ": " + reply, console_prefix)
+            if is_private:
+                common.console_print("Direct Message to " + message.author.name + ": " + reply, console_prefix)
             else:
                 common.console_print("Message to #" + message.channel.name + ": " + reply, console_prefix)
 
         if isinstance(reply, str):
-            await discord_client.send_message(message.channel, reply)
+            if discordpy_legacy:
+                await discord_client.send_message(message.channel, reply)
+            else:
+                await message.channel.send(reply)
         else:
-            await discord_client.send_message(message.channel, embed = reply)
+            if discordpy_legacy:
+                await discord_client.send_message(message.channel, embed = reply)
+            else:
+                await message.channel.send(embed = reply)
 
 @discord_client.event
 async def on_channel_update(before, after):
