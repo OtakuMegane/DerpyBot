@@ -133,7 +133,7 @@ def incoming_message_command(command):
 
     return None
 
-def incoming_message(message, client_name, do_learn):
+def incoming_message(message, client_name, bot_paged, do_learn):
     """
     The primary input function. At present any content from outside classes or
     modules comes through here. A reply is returned if warranted, otherwise
@@ -155,38 +155,37 @@ def incoming_message(message, client_name, do_learn):
         time.sleep(0.05)
 
     make_reply = False
-    bot_named = False
-    bot_paged = False
-    doing_chain = True
     reply = None
     split_message = message.split()
+    filtered_split = list()
     name_fold = client_name.casefold()
 
     for index, word in enumerate(split_message):
         word_fold = word.casefold()
-        if index == 0:
-            if name_fold in word_fold:
-                bot_paged = True
 
-                if len(split_message) > 1:
-                    message = message.split(None, 1)[1]
+        # Check if bot was named in message; if so, remove name and indicate bot was paged
+        if word_fold != name_fold and word_fold != "@" + name_fold:
+            filtered_split.append(word)
         else:
-            if name_fold in word_fold:
-                bot_named = True
+            bot_paged = True
 
-    prepared_message = prepare_message(message)
+    prepared_message = prepare_message(" ".join(filtered_split))
+
+    if prepared_message == "":
+        return None
 
     if do_learn:
         learn(prepared_message)
 
     reply_rand = random.uniform(0, 100.0)
 
-    if bot_named or bot_paged:
+    if bot_paged:
         make_reply = reply_rand <= config.bot_name_reply_rate
     else:
         make_reply = reply_rand <= config.reply_rate
 
     if make_reply:
+        doing_chain = True
         reply = compose_reply(prepared_message)
 
     doing_chain = False

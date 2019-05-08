@@ -1,10 +1,10 @@
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 import common
 
 # config.py is just code. Don't put settings here!
 # Settings should go in config.cfg
 
-config = SafeConfigParser()
+config = ConfigParser()
 bot_token = ""
 discord_playing = ""
 owner_ids = []
