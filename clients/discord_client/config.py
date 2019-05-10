@@ -11,11 +11,11 @@ owner_ids = []
 command_alias = ""
 discord_channels = []
 discord_markov_channels = []
-markov_learn_pm = None
-chat_to_console = None
+markov_learn_dm = True
+chat_to_console = True
 
 def load(parent_location):
-    global bot_token, discord_playing, owner_ids, command_alias, discord_channels, discord_learn_channels, chat_to_console
+    global bot_token, discord_playing, owner_ids, command_alias, discord_channels, discord_markov_channels, chat_to_console, markov_learn_dm
 
     config.read(parent_location + '/config/defaults.cfg')
     config.read(parent_location + '/config/config.cfg')
@@ -35,5 +35,8 @@ def load(parent_location):
 
         for channel in config.get('Discord', 'markov-channels').split(','):
             discord_markov_channels.append(channel.strip())
-            
-        markov_learn_pm = common.set_boolean(config.get('Markov', 'markov_learn_pm'))
+        
+        if config.has_option('Markov', 'markov_learn_pm'): # Legacy
+            markov_learn_dm = common.set_boolean(config.get('Markov', 'markov_learn_pm'))
+        else:
+            markov_learn_dm = common.set_boolean(config.get('Markov', 'markov_learn_dm'))
