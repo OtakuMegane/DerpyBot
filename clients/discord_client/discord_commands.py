@@ -1,4 +1,4 @@
-from configparser import SafeConfigParser
+from configparser import ConfigParser
 import pkg_resources
 import discord
 import re
@@ -66,16 +66,15 @@ def load_custom_commands(reload, script_location):
     if reload:
         commands = defaultdict(dict)
 
-    config = SafeConfigParser()
-    commands_input = common.text_file_read(parent_location + '/config/custom_discord_commands.cfg')
-    dummy_name = "derpy_dummy_asdfg" # Avoiding no sections error
-    config.read_string("[" + dummy_name + "]" + commands_input) 
+    config = ConfigParser()
+    common.load_config_file(parent_location + '/config/custom_discord_commands.cfg', config)
+
+    if len(config.sections()) is 0:
+        return
+
     sections = config.sections()
 
     for section in sections:
-        if dummy_name in section:
-            continue
-        
         if config.has_option(section, 'content'):
             commands[section]['content'] = config.get(section, 'content')
 

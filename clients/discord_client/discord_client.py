@@ -9,11 +9,12 @@ from . import config
 import os
 import common
 
-version = '0.9.2.10'
+version = '0.9.2.11'
 
 discord_client = discord.Client()
 discordpy_legacy = discord.version_info[0] < 1
 ready = False
+run_failure = False
 markov = None
 derpy_stats = None
 console_prefix = "[Discord Client] "
@@ -112,7 +113,7 @@ async def on_channel_update(before, after):
         common.console_print("Channel #" + before.name + " has changed to #" + after.name, console_prefix)
 
 def launch(markov_instance, parent_location, stats_instance):
-    global markov, derpy_stats
+    global markov, derpy_stats, run_failure
 
     common.console_print("Discord Client version " + version, console_prefix)
     config.load(parent_location)
@@ -120,6 +121,11 @@ def launch(markov_instance, parent_location, stats_instance):
     derpy_stats = stats_instance
     discord_commands.pass_data(markov, config, stats_instance)  # We'll probably do something better eventually
     discord_commands.load_custom_commands(False, parent_location)
+    
+    if config.bot_token == '':
+        common.console_print("Token is not present. Cannot login to Discord.", console_prefix)
+        run_failure = True
+        return
 
     try:
         asyncio.set_event_loop(discord_client.loop)

@@ -61,6 +61,10 @@ def activate(reload):
     common.console_print("DerpyMarkov version " + version, console_prefix)
     common.console_print("Loading main dictionary...", console_prefix)
     input_text = common.text_file_read(config.main_dictionary_file)
+
+    if input_text == '':
+        input_text = 'derp'
+
     model = derpymodel.DerpyText(input_text, state_size = config.state_size1)
     lines = generate_lines_from_model(True)
     get_statistics(True, False)

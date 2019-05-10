@@ -7,17 +7,14 @@ import importlib.util
 import re
 import os
 import datetime
+import pathlib
 
-version = '0.9.3.9'
+version = '0.9.3.10'
 
 script_location = os.path.dirname(os.path.abspath(__file__))
 config = ConfigParser(allow_no_value = True)
-config.read(script_location + '/config/defaults.cfg')
-config.read(script_location + '/config/config.cfg')
 
 markov = None
-use_discord_client = common.set_boolean(config.get('Config', 'use_discord_client'))
-use_markov = common.set_boolean(config.get('Config', 'use_markov'))
 chat_client = None
 derpy_stats = None
 client_thread = None
@@ -112,42 +109,47 @@ def stats_module_load():
     global derpy_stats
 
     derpy_stats = importlib.import_module('derpy_stats')
+    
+def load_config():
+    global config
+
+    defaults_present = False
+    common.load_config_file(script_location + '/config/defaults.cfg', config)
+
+    if len(config.sections()) is not 0:
+        defaults_present = True
+
+    common.load_config_file(script_location + '/config/config.cfg', config)
+    
+    if not defaults_present and len(config.sections()) is 0:
+        common.console_print("Both configuration files config.cfg and defaults.cfg are missing or empty! D:", console_prefix)
+        common.console_print("We can't function like this...", console_prefix)
+        shutdown()
 
 def shutdown():
     global shutting_down
     shutting_down = True
     common.console_print("Shutting everything down...", console_prefix)
 
-    if not markov.shutting_down:
-        markov.shutdown()
+    if markov is not None:
+        if not markov.shutting_down:
+            markov.shutdown()
 
-    chat_client.shutdown()
+    if chat_client is not None:
+        chat_client.shutdown()
+
     common.console_print("Good night!", console_prefix)
     raise SystemExit
 
+load_config()
+use_discord_client = config.getboolean('Config', 'use_discord_client', fallback = True)
+use_markov = config.getboolean('Config', 'use_markov', fallback = True)
 stats_module_load()
 common.console_print("DerpyBot version " + version, console_prefix)
-
-#These try commands check if config files are present, because if \config\config.cfg file is not present program will crash.
-try:
-    fh = open(script_location + '/config/config.cfg', 'r')
-    # check to see if config exists
-except FileNotFoundError:
-	common.console_print("'\config\config.cfg' not found!!! Shutting down...")
-	exit()
-    # Inform user config does not exist, then stops the program
-	
-try:
-    fh = open(script_location + '\modules\derpymarkov\config\config.cfg', 'r')
-    # check to see if config exists
-except FileNotFoundError:
-	common.console_print("'\modules\derpymarkov\config\config.cfg' not found. Program will still function but that might cause problems!")
-    # Inform user config does not exist
-
 markov_load(False)
 client_load(False)
 
-while not chat_client.ready:
+while not chat_client.ready and not chat_client.run_failure:
     time.sleep(0.1)
 
 status_thread = Thread(target = client_status, args = [])

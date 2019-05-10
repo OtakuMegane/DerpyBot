@@ -1,13 +1,5 @@
 import os
-
-def set_boolean(config_value):
-    if config_value.lower() == "true":
-        return True
-
-    if config_value.lower() == "false":
-        return False
-
-    return False
+from configparser import ConfigParser
 
 def console_print(output, prefix = ''):
     print(prefix + output.encode('ascii', 'replace').decode('utf-8', 'ignore'))
@@ -20,7 +12,15 @@ def text_file_read(file_location):
             file_input = text.read()
             text.close()
 
-    if not file_input:
-        file_input = 'derp'
-
     return file_input
+
+def load_config_file(config_file, config = None):
+    if config is None:
+        config = ConfigParser(allow_no_value = True)
+
+    config_text = text_file_read(config_file)
+    
+    if config_text != '':
+        config.read_string(config_text)
+
+    return config
