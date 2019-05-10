@@ -10,7 +10,7 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.3.11'
+version = '0.9.3.12'
 
 model = None
 unsaved = False
@@ -65,6 +65,7 @@ def activate(reload):
     lines = generate_lines_from_model(True)
     get_statistics(True, False)
     common.console_print("Normal reply rate is " + str(config.reply_rate) + " and bot name reply rate is " + str(config.bot_name_reply_rate) + ".", console_prefix)
+    common.console_print("The save interval is " + str(config.save_interval) + " seconds.", console_prefix)
     del input_text
     setup_commands()
 
@@ -89,9 +90,8 @@ def get_statistics(print_to_console, return_formatted):
     output.append("We are currently using a state size of " + str(model.state_size) + " which generated " + str(context_count) + " contexts.")
 
     if print_to_console:
-        common.console_print(output[0], console_prefix)
-        common.console_print(output[1], console_prefix)
-        common.console_print(output[2], console_prefix)
+        for entry in output:
+            common.console_print(entry, console_prefix)
 
     if return_formatted:
         return "\n".join(output)
