@@ -47,7 +47,7 @@ async def on_ready():
 @discord_client.event
 async def on_message(message):
     reply = None
-    markov_learn = config.markov_learn_pm
+    markov_learn = False
     bot_mentioned = discord_client.user in message.mentions
 
     if message.author.bot or message.author == discord_client.user:
@@ -62,13 +62,14 @@ async def on_message(message):
         is_private = isinstance(message.channel, discord.abc.PrivateChannel)
 
     if is_private:
+        markov_learn = config.markov_learn_dm
         bot_mentioned = True
         common.console_print("Direct Message from " + message.author.name + ": " + message.content, console_prefix)
     else:
         if message.channel.name not in config.discord_channels:
             return
-        if message.channel.name not in config.discord_markov_channels:
-            markov_learn = False
+        if message.channel.name in config.discord_markov_channels:
+            markov_learn = True
 
         common.console_print("Message from #" + message.channel.name + ": " + message.content, console_prefix)
 
