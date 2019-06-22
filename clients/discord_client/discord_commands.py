@@ -94,8 +94,10 @@ def load_custom_commands(reload, script_location):
             commands[section]['description'] = config.get(section, 'description')
 
 def get_commands(message, split_content):
-    response = None
     rejoined = ' '.join(split_content)
+
+    if len(split_content) is 0:
+        return None
 
     if 'markov' in split_content[0]:
         split_content.pop(0)
