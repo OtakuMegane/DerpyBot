@@ -51,7 +51,10 @@ async def on_message(message):
     markov_learn = False
     bot_mentioned = discord_client.user in message.mentions
 
-    if message.author.bot or message.author == discord_client.user:
+    if message.author.bot and config.ignore_bots:
+        return
+
+    if message.author == discord_client.user:
         return
 
     if message.content is "" or message.content is None:
@@ -67,9 +70,10 @@ async def on_message(message):
         bot_mentioned = True
         common.console_print("Direct Message from " + message.author.name + ": " + message.content, console_prefix)
     else:
-        if message.channel.name not in config.discord_channels:
+        if not config.discord_all_channels and message.channel.name not in config.discord_channels:
             return
-        if message.channel.name in config.discord_markov_channels:
+
+        if config.discord_markov_all_channels or message.channel.name in config.discord_markov_channels:
             markov_learn = True
 
         common.console_print("Message from #" + message.channel.name + ": " + message.content, console_prefix)

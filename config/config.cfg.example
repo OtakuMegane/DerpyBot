@@ -11,5 +11,5 @@ token = MjgxNTk0MTM5ODAyNTk5NDI2.C4DESU.NLEwiFcDijiorsi3835b-rBBBlol
 playing = with Markov chains
 owner_id = 0
 channels = general
-markov-channels = general
-chat-to-console = true
+markov_channels = general
+chat_to_console = true
