@@ -55,4 +55,4 @@ def load(parent_location):
 
         discord_all_channels = config.getboolean('Discord', 'all_channels', fallback = False)
         discord_markov_all_channels = config.getboolean('Discord', 'markov_all_channels', fallback = False)
-        ignore_bots = config.get('Discord', 'ignore_bots', fallback = True)
+        #ignore_bots = config.getboolean('Discord', 'ignore_bots', fallback = True)

@@ -301,7 +301,7 @@ def clean_up_punctuation(sentence):
                 unmatched_close = index - 1
 
     if unmatched_open is not -1:
-        if len(sentence_fragments) >= unmatched_open + 1:
+        if len(sentence_fragments) > unmatched_open + 1:
             random_index = random.randrange(unmatched_open + 1, len(sentence_fragments))
         else:
             random_index = len(sentence_fragments);
