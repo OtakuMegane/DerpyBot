@@ -6,6 +6,8 @@ from configparser import ConfigParser
 import importlib
 from . import discord_commands
 from . import config
+from discord.ext import commands
+from . import utils
 import os
 import common
 
@@ -85,9 +87,17 @@ async def on_message(message):
         reply = discord_commands.get_commands(message, split_content)
     else:
         if markov is not None:
-            reply = markov.incoming_message(message.clean_content, discord_client.user.name, bot_mentioned, markov_learn)
+            if config.raw_to_markov:
+                markov_text = message.content
+            else:
+                markov_text = message.clean_content
+
+            reply = markov.incoming_message(markov_text, discord_client.user.name, bot_mentioned, markov_learn)
 
     if reply is not "" and reply is not None:
+        if config.clean_output:
+            reply = utils.clean_mentions(reply, discord_client)
+
         if config.chat_to_console:
             if is_private:
                 common.console_print("Direct Message to " + message.author.name + ": " + reply, console_prefix)

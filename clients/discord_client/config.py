@@ -17,9 +17,11 @@ chat_to_console = True
 discord_all_channels = False
 discord_markov_all_channels = False
 ignore_bots = True
+raw_to_markov = False
+clean_output = True
 
 def load(parent_location):
-    global bot_token, discord_playing, owner_ids, command_alias, discord_channels, discord_all_channels, discord_markov_channels, discord_markov_all_channels, chat_to_console, markov_learn_dm, ignore_bots
+    global bot_token, discord_playing, owner_ids, command_alias, discord_channels, discord_all_channels, discord_markov_channels, discord_markov_all_channels, chat_to_console, markov_learn_dm, ignore_bots, raw_to_markov, clean_output
 
     config = ConfigParser()
     common.load_config_file(parent_location + '/config/defaults.cfg', config)
@@ -56,3 +58,5 @@ def load(parent_location):
         discord_all_channels = config.getboolean('Discord', 'all_channels', fallback = False)
         discord_markov_all_channels = config.getboolean('Discord', 'markov_all_channels', fallback = False)
         #ignore_bots = config.getboolean('Discord', 'ignore_bots', fallback = True)
+        raw_to_markov = config.getboolean('Discord', 'raw_to_markov', fallback = False)
+        clean_output = config.getboolean('Discord', 'clean_output', fallback = True)
