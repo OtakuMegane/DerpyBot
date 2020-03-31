@@ -9,7 +9,7 @@ import os
 import datetime
 import pathlib
 
-version = '0.9.3.11'
+version = '0.9.3.12'
 
 script_location = os.path.dirname(os.path.abspath(__file__))
 config = ConfigParser(allow_no_value = True)

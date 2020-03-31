@@ -11,7 +11,7 @@ from . import utils
 import os
 import common
 
-version = '0.9.2.12'
+version = '0.9.2.13'
 
 discord_client = discord.Client()
 discordpy_legacy = discord.version_info[0] < 1
