@@ -37,3 +37,6 @@ if config.has_section('Sentence'):
     max_overlap_ratio = config.getfloat('Sentence', 'max_overlap_ratio', fallback = 0.80)
     max_overlap_total = config.getint('Sentence', 'max_overlap_total', fallback = 15)
     random_on_key_fail = config.getboolean('Sentence', 'random_on_key_fail', fallback = False)
+
+if config.has_section('Learn'):
+    preserve_case = config.getboolean('Learn', 'preserve_case', fallback = False)

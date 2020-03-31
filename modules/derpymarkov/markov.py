@@ -203,12 +203,13 @@ def prepare_message(message):
     message = message.replace('"', '')
     split_message = message.split()
 
-    # Check for case-sensitive things such as URIs and preserve them
-    for index, substring in enumerate(split_message):
-        if not uri_regex.match(substring)\
-        and not emoticon_regex.match(substring)\
-        and not hashtag_user_regex.match(substring):
-            split_message[index] = substring.lower()
+    if not config.preserve_case:
+        # Check for case-sensitive things such as URIs and preserve them
+        for index, substring in enumerate(split_message):
+            if not uri_regex.match(substring)\
+            and not emoticon_regex.match(substring)\
+            and not hashtag_user_regex.match(substring):
+                split_message[index] = substring.lower()
 
     filtered_message = ' '.join(split_message)
     return filtered_message
