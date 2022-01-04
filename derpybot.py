@@ -28,7 +28,7 @@ def commands():
     while not shutting_down:
         command = input('>> ')
 
-        if command is "":
+        if command == "":
             continue
 
         split_command = command.split()
@@ -116,12 +116,12 @@ def load_config():
     defaults_present = False
     common.load_config_file(script_location + '/config/defaults.cfg', config)
 
-    if len(config.sections()) is not 0:
+    if len(config.sections()) != 0:
         defaults_present = True
 
     common.load_config_file(script_location + '/config/config.cfg', config)
     
-    if not defaults_present and len(config.sections()) is 0:
+    if not defaults_present and len(config.sections()) == 0:
         common.console_print("Both configuration files config.cfg and defaults.cfg are missing or empty! D:", console_prefix)
         common.console_print("We can't function like this...", console_prefix)
         shutdown()

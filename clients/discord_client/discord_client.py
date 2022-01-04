@@ -59,7 +59,7 @@ async def on_message(message):
     if message.author == discord_client.user:
         return
 
-    if message.content is "" or message.content is None:
+    if message.content == "" or message.content is None:
         return
 
     if discordpy_legacy:
@@ -94,7 +94,7 @@ async def on_message(message):
 
             reply = markov.incoming_message(markov_text, discord_client.user.name, bot_mentioned, markov_learn)
 
-    if reply is not "" and reply is not None:
+    if reply != "" and reply is not None:
         if config.clean_output:
             reply = utils.clean_mentions(reply, discord_client)
 

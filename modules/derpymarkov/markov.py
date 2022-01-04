@@ -257,7 +257,7 @@ def get_sentence(words, key_phrase):
 
         try:
             attempt = model.make_sentence(tries = 1, **test_kwargs)
-        except KeyError:
+        except KeyError as error:
             attempt = None
 
         if attempt is not None:
@@ -278,7 +278,7 @@ def get_sentence(words, key_phrase):
                 
                 if final_sentence is not None:
                     break
-        except KeyError:
+        except (KeyError, markovify.text.ParamError) as error:
             final_sentence = None
 
     if final_sentence is not None:
@@ -296,12 +296,12 @@ def clean_up_punctuation(sentence):
             unmatched_open = index - 1
         
         if ')' in fragment:
-            if unmatched_open is not -1:
+            if unmatched_open != -1:
                 unmatched_open = -1
             else:
                 unmatched_close = index - 1
 
-    if unmatched_open is not -1:
+    if unmatched_open != -1:
         if len(sentence_fragments) > unmatched_open + 1:
             random_index = random.randrange(unmatched_open + 1, len(sentence_fragments))
         else:
@@ -309,7 +309,7 @@ def clean_up_punctuation(sentence):
 
         sentence_fragments[random_index] = sentence_fragments[random_index] + ')'
 
-    if unmatched_close is not -1:
+    if unmatched_close != -1:
         if unmatched_close < 2:
             sentence_fragments[unmatched_close] = '(' + sentence_fragments[unmatched_close]
         else:

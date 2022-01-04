@@ -69,7 +69,7 @@ def load_custom_commands(reload, script_location):
     config = ConfigParser()
     common.load_config_file(parent_location + '/config/custom_discord_commands.cfg', config)
 
-    if len(config.sections()) is 0:
+    if len(config.sections()) == 0:
         return
 
     sections = config.sections()
@@ -96,7 +96,7 @@ def load_custom_commands(reload, script_location):
 def get_commands(message, split_content):
     rejoined = ' '.join(split_content)
 
-    if len(split_content) is 0:
+    if len(split_content) == 0:
         return None
 
     if 'markov' in split_content[0]:
