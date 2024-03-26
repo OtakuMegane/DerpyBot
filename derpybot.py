@@ -5,13 +5,19 @@ import time
 import importlib
 import importlib.util
 import re
-import os
+#import os
 import datetime
 import pathlib
+
+import hikari
+import os
+
+from clients.discord_client import discord_client
 
 version = '0.9.3.12'
 
 script_location = os.path.dirname(os.path.abspath(__file__))
+common.console_print(os.path.abspath(__file__))
 config = ConfigParser(allow_no_value = True)
 
 markov = None
@@ -67,17 +73,17 @@ def client_status():
             delay += 1
             continue
 
-        client_ok = chat_client.still_running(False)
+        #client_ok = chat_client.still_running(False)
 
-        if not client_ok:
-            client_load(True)
+        #if not client_ok:
+            #client_load(True)
 
 def client_load(reload):
-    global chat_client, client_thread
+    global chat_client, client_thread, config
 
     common.console_print("Loading chat client...", console_prefix)
 
-    if reload:
+    """if reload:
         chat_client.shutdown()
         importlib.reload(chat_client)
     else:
@@ -86,8 +92,16 @@ def client_load(reload):
 
     client_thread = None
     client_thread = Thread(target = chat_client.launch, args = ([markov, script_location, derpy_stats]))
-    client_thread.start()
+    client_thread.start()"""
 
+    # Do we actually need this?
+    importlib.invalidate_caches()
+    chat_client = importlib.import_module('clients.discord_client.discord_client')
+
+    #chat_client = discord_client.DiscordClient(config.bot_token)
+    chat_client.launch(markov, script_location, derpy_stats)
+    #chat_client.launch(markov, script_location, derpy_stats)
+            
 def markov_load(reload):
     global markov
 
@@ -149,8 +163,8 @@ common.console_print("DerpyBot version " + version, console_prefix)
 markov_load(False)
 client_load(False)
 
-while not chat_client.ready and not chat_client.run_failure:
-    time.sleep(0.1)
+#while not chat_client.ready and not chat_client.run_failure:
+#    time.sleep(0.1)
 
 status_thread = Thread(target = client_status, args = [])
 status_thread.start()

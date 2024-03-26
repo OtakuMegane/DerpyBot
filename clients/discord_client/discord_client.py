@@ -11,8 +11,12 @@ from . import utils
 import os
 import common
 
-version = '0.9.2.13'
+import hikari
 
+version = '0.9.2.13'
+config = common.load_config_file(common.CONFIG_PATH + "config.cfg")
+token = config.get('Discord', 'token')
+client = hikari.GatewayBot(token)
 discord_client = discord.Client()
 discordpy_legacy = discord.version_info[0] < 1
 ready = False
@@ -127,21 +131,20 @@ async def on_channel_update(before, after):
         common.console_print("Channel #" + before.name + " has changed to #" + after.name, console_prefix)
 
 def launch(markov_instance, parent_location, stats_instance):
-    global markov, derpy_stats, run_failure
-
+    global client, markov, derpy_stats, run_failure
     common.console_print("Discord Client version " + version, console_prefix)
-    config.load(parent_location)
     markov = markov_instance
     derpy_stats = stats_instance
     discord_commands.pass_data(markov, config, stats_instance)  # We'll probably do something better eventually
     discord_commands.load_custom_commands(False, parent_location)
     
-    if config.bot_token == '':
+    """if config.bot_token == '':
         common.console_print("Token is not present. Cannot login to Discord.", console_prefix)
         run_failure = True
-        return
+        return"""
 
-    try:
+    client.run()
+    """try:
         asyncio.set_event_loop(discord_client.loop)
         discord_client.loop.run_until_complete(discord_client.start(config.bot_token))
     except KeyboardInterrupt:
@@ -153,7 +156,8 @@ def launch(markov_instance, parent_location, stats_instance):
             discord_client.loop.run_until_complete(gathered)
             gathered.exception()
         except:
-            pass
+            pass"""
+
 
 def logout():
     future = asyncio.run_coroutine_threadsafe(discord_client.close(), discord_client.loop)
@@ -163,3 +167,4 @@ def shutdown():
     if logged_in:
         logout()
     common.console_print("Shutting down client...", console_prefix)
+    

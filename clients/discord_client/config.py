@@ -24,7 +24,7 @@ def load(parent_location):
     global bot_token, discord_playing, owner_ids, command_alias, discord_channels, discord_all_channels, discord_markov_channels, discord_markov_all_channels, chat_to_console, markov_learn_dm, ignore_bots, raw_to_markov, clean_output
 
     config = ConfigParser()
-    common.load_config_file(parent_location + '/config/defaults.cfg', config)
+    #config = common.load_config_file(parent_location + '/config/defaults.cfg', parent_location + '/config/config.cfg')
     common.load_config_file(parent_location + '/config/config.cfg', config)
 
     if config.has_section('Discord'):
