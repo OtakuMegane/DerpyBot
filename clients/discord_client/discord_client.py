@@ -25,14 +25,19 @@ markov = None
 derpy_stats = None
 console_prefix = "[Discord Client] "
 logged_in = False
+loop = None
 
-def logged_in():
-    return logged_in
+def type():
+    return 'discord'
 
-def still_running(print):
+def running(print):
     if print:
-        common.console_print("Client still running! Logged in? " + str(logged_in()), console_prefix)
-    return True
+        if client.is_alive:
+            common.console_print("Client is online.", console_prefix)
+        else:
+            common.console_print("Client is offline.", console_prefix)
+            
+    return client.is_alive
 
 @discord_client.event
 async def on_ready():
@@ -131,40 +136,24 @@ async def on_channel_update(before, after):
         common.console_print("Channel #" + before.name + " has changed to #" + after.name, console_prefix)
 
 def launch(markov_instance, parent_location, stats_instance):
-    global client, markov, derpy_stats, run_failure
+    global client, markov, derpy_stats, run_failure, loop
     common.console_print("Discord Client version " + version, console_prefix)
     markov = markov_instance
     derpy_stats = stats_instance
     discord_commands.pass_data(markov, config, stats_instance)  # We'll probably do something better eventually
     discord_commands.load_custom_commands(False, parent_location)
-    
-    """if config.bot_token == '':
-        common.console_print("Token is not present. Cannot login to Discord.", console_prefix)
-        run_failure = True
-        return"""
 
-    client.run()
-    """try:
-        asyncio.set_event_loop(discord_client.loop)
-        discord_client.loop.run_until_complete(discord_client.start(config.bot_token))
-    except KeyboardInterrupt:
-        discord_client.loop.run_until_complete(discord_client.logout())
-        pending = asyncio.Task.all_tasks(loop = discord_client.loop)
-        gathered = asyncio.gather(*pending, loop = discord_client.loop)
-        try:
-            gathered.cancel()
-            discord_client.loop.run_until_complete(gathered)
-            gathered.exception()
-        except:
-            pass"""
-
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(client.start())
 
 def logout():
     future = asyncio.run_coroutine_threadsafe(discord_client.close(), discord_client.loop)
     common.console_print("Logging out...", console_prefix)
 
 def shutdown():
-    if logged_in:
-        logout()
+    global loop, client
+    
+    loop.run_until_complete(client.close())
     common.console_print("Shutting down client...", console_prefix)
     
