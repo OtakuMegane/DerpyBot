@@ -4,6 +4,8 @@ from configparser import ConfigParser
 SCRIPT_BASE_PATH = os.path.dirname(os.path.abspath(__file__)) + "/"
 CONFIG_PATH = SCRIPT_BASE_PATH + "config/"
 CLIENT_CONFIG_PATH = CONFIG_PATH + "clients/"
+shutting_down = False
+markov = None
 
 def console_print(output, prefix = ''):
     print(prefix + output.encode('ascii', 'replace').decode('utf-8', 'ignore'))

@@ -8,16 +8,8 @@ import common
 import datetime
 
 commands = defaultdict(dict)
-markov = None
-config = None
-parent_location = None
+config = common.load_config_file(common.CONFIG_PATH + "custom_discord_commands.cfg")
 derpy_stats = None
-
-def pass_data(markov_instance, discord_config, stats_instance):
-    global markov, config, derpy_stats
-    markov = markov_instance
-    config = discord_config
-    derpy_stats = stats_instance
 
 def list_commands():
     command_list = []
@@ -38,7 +30,7 @@ def list_commands():
 
     command_list.insert(0, "__Discord Commands__")
     command_output = '**\n**'.join(sorted(command_list, key = str.lower))
-    markov_commands = markov.get_command_list()
+    markov_commands = common.markov.get_command_list()
     markov_command_list = []
 
     if markov_commands:
@@ -57,17 +49,11 @@ def list_commands():
 
     return "**" + command_output + "**"
 
-def load_custom_commands(reload, script_location):
-    global commands, parent_location
-
-    if parent_location is None:
-        parent_location = script_location
+def load_custom_commands(reload):
+    global commands
 
     if reload:
         commands = defaultdict(dict)
-
-    config = ConfigParser()
-    common.load_config_file(parent_location + '/config/custom_discord_commands.cfg', config)
 
     if len(config.sections()) == 0:
         return
@@ -101,17 +87,17 @@ def get_commands(message, split_content):
 
     if 'markov' in split_content[0]:
         split_content.pop(0)
-        return markov.incoming_message_command(' '.join(split_content))
+        return common.markov.incoming_message_command(' '.join(split_content))
 
     if 'commands' in split_content[0]:
         return list_commands()
 
     if 'reload commands' in rejoined and message.author.id in config.owner_ids:
-        load_custom_commands(True, parent_location)
+        load_custom_commands(True)
         return "Commands have been reloaded!"
 
     if 'uptime' in split_content[0]:
-        bot_start_time = derpy_stats.retrieve_stats('derpybot', 'start_time')
+        bot_start_time = common.derpy_stats.retrieve_stats('derpybot', 'start_time')
         uptime_delta = datetime.datetime.now() - bot_start_time
         up_m, up_s = divmod(uptime_delta.seconds, 60)
         up_h, up_m = divmod(up_m, 60)

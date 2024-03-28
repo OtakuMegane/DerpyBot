@@ -1,27 +1,21 @@
 from threading import Thread
 from configparser import ConfigParser
 import common
-import time
+import chat_clients
 import importlib
 import importlib.util
 import re
-#import os
+
 import datetime
 import pathlib
 
 import hikari
 import os
 
-from clients.discord_client import discord_client
-
 version = '0.9.3.12'
-
-script_location = os.path.dirname(os.path.abspath(__file__))
-common.console_print(os.path.abspath(__file__))
 config = ConfigParser(allow_no_value = True)
 
 markov = None
-chat_client = None
 derpy_stats = None
 status_thread = None
 shutting_down = False
@@ -63,44 +57,14 @@ def commands():
             
 def console_client_commands(command, arguments):
     if command == "status":
-            chat_client.still_running(True)
+            chat_clients.get_client(arguments[0]).running(True)
 
     if command == "start":
-            client_start(arguments[0])
-            
+            chat_clients.start(arguments[0])
+
     if command == "stop":
-            client_stop(arguments[0])
+            chat_clients.stop(arguments[0])
 
-def client_status():
-    global chat_client
-
-    while not shutting_down:
-        time.sleep(5.0)
-
-    if not shutting_down and not chat_client.running(False):
-        client_start(chat_client.type())
-
-def client_start(type):
-    global chat_client
-    
-    if chat_client is not None and type == chat_client.type() and chat_client.running(False):
-        chat_client.shutdown()
-
-    common.console_print("Loading chat client...", console_prefix)
-
-    # Do we actually need this?
-    importlib.invalidate_caches()
-    
-    if type == 'discord':
-        chat_client = importlib.import_module('clients.discord_client.discord_client')
-        chat_client.launch(markov, script_location, derpy_stats)
-
-def client_stop(type):
-    global chat_client
-    
-    if type == 'discord':
-        chat_client.shutdown()
-    
 def markov_load(reload):
     global markov
 
@@ -117,6 +81,7 @@ def markov_load(reload):
         markov = importlib.import_module('modules.' + markov_package + '.' + markov_module)
 
     markov.activate(reload)
+    common.markov = markov
 
 def stats_module_load():
     global derpy_stats
@@ -129,12 +94,12 @@ def load_config():
     global config
 
     defaults_present = False
-    common.load_config_file(script_location + '/config/defaults.cfg', config)
+    common.load_config_file(common.CONFIG_PATH + 'defaults.cfg', config)
 
     if len(config.sections()) != 0:
         defaults_present = True
 
-    common.load_config_file(script_location + '/config/config.cfg', config)
+    common.load_config_file(common.CONFIG_PATH + 'config.cfg', config)
     
     if not defaults_present and len(config.sections()) == 0:
         common.console_print("Both configuration files config.cfg and defaults.cfg are missing or empty! D:", console_prefix)
@@ -150,21 +115,17 @@ def shutdown():
         if not markov.shutting_down:
             markov.shutdown()
 
-    if chat_client is not None:
-        chat_client.shutdown()
-
+    chat_clients.shutdown()
     status_thread.join(1)
     common.console_print("Good night!", console_prefix)
     raise SystemExit
 
 load_config()
-use_discord_client = config.getboolean('Config', 'use_discord_client', fallback = True)
 use_markov = config.getboolean('Config', 'use_markov', fallback = True)
 stats_module_load()
 common.console_print("DerpyBot version " + version, console_prefix)
 markov_load(False)
-client_start('discord')
-status_thread = Thread(target = client_status, args = [])
+chat_clients.start('discord')
+status_thread = Thread(target = chat_clients.monitor, args = [])
 status_thread.start()
-
 commands()

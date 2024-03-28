@@ -10,7 +10,6 @@ from discord.ext import commands
 from . import utils
 import os
 import common
-
 import hikari
 
 version = '0.9.2.13'
@@ -20,9 +19,6 @@ client = hikari.GatewayBot(token)
 discord_client = discord.Client()
 discordpy_legacy = discord.version_info[0] < 1
 ready = False
-run_failure = False
-markov = None
-derpy_stats = None
 console_prefix = "[Discord Client] "
 logged_in = False
 loop = None
@@ -36,7 +32,7 @@ def running(print):
             common.console_print("Client is online.", console_prefix)
         else:
             common.console_print("Client is offline.", console_prefix)
-            
+
     return client.is_alive
 
 @discord_client.event
@@ -95,13 +91,13 @@ async def on_message(message):
     if config.command_alias == command_check:
         reply = discord_commands.get_commands(message, split_content)
     else:
-        if markov is not None:
+        if common.markov is not None:
             if config.raw_to_markov:
                 markov_text = message.content
             else:
                 markov_text = message.clean_content
 
-            reply = markov.incoming_message(markov_text, discord_client.user.name, bot_mentioned, markov_learn)
+            reply = common.markov.incoming_message(markov_text, discord_client.user.name, bot_mentioned, markov_learn)
 
     if reply != "" and reply is not None:
         if config.clean_output:
@@ -129,31 +125,29 @@ async def on_channel_update(before, after):
     if after.name != before.name:
         if before.name in config.discord_channels and after.name not in config.discord_channels:
             config.discord_channels.append(after.name)
-        
+
         if before.name in config.discord_markov_channels and after.name not in config.discord_markov_channels:
             config.discord_markov_channels.append(after.name)
-            
+
         common.console_print("Channel #" + before.name + " has changed to #" + after.name, console_prefix)
 
-def launch(markov_instance, parent_location, stats_instance):
-    global client, markov, derpy_stats, run_failure, loop
-    common.console_print("Discord Client version " + version, console_prefix)
-    markov = markov_instance
-    derpy_stats = stats_instance
-    discord_commands.pass_data(markov, config, stats_instance)  # We'll probably do something better eventually
-    discord_commands.load_custom_commands(False, parent_location)
+def start():
+    global loop
+
+    if client.is_alive:
+        return
+
+    common.console_print("Starting Discord client version " + version + "...", console_prefix)
+    discord_commands.load_custom_commands(False)
 
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(client.start())
 
-def logout():
-    future = asyncio.run_coroutine_threadsafe(discord_client.close(), discord_client.loop)
-    common.console_print("Logging out...", console_prefix)
+def stop():
+    if not client.is_alive:
+        return
 
-def shutdown():
-    global loop, client
-    
+    common.console_print("Shutting down Discord client...", console_prefix)
     loop.run_until_complete(client.close())
-    common.console_print("Shutting down client...", console_prefix)
-    
+
