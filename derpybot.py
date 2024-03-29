@@ -1,6 +1,7 @@
 from threading import Thread
 from configparser import ConfigParser
 import common
+import derpybot_config
 import chat_clients
 import importlib
 import importlib.util
@@ -19,7 +20,7 @@ markov = None
 derpy_stats = None
 status_thread = None
 shutting_down = False
-console_prefix = "[DerpyBot] "
+console_prefix = "[DerpyBot]"
 
 def commands():
     common.console_print("Entering command mode...", console_prefix)
@@ -68,11 +69,12 @@ def console_client_commands(command, arguments):
 def markov_load(reload):
     global markov
 
-    if not use_markov:
+    if not derpybot_config.use_derpymarkov:
         return
 
     common.console_print("Loading markov...", console_prefix)
 
+    return
     if reload:
         importlib.reload(markov)
     else:
@@ -106,6 +108,10 @@ def load_config():
         common.console_print("We can't function like this...", console_prefix)
         shutdown()
 
+def load_clients():
+    if derpybot_config.load_discord_client:
+        chat_clients.start('discord')
+    
 def shutdown():
     global shutting_down
     shutting_down = True
@@ -120,12 +126,11 @@ def shutdown():
     common.console_print("Good night!", console_prefix)
     raise SystemExit
 
-load_config()
-use_markov = config.getboolean('Config', 'use_markov', fallback = True)
+#load_config()
 stats_module_load()
 common.console_print("DerpyBot version " + version, console_prefix)
 markov_load(False)
-chat_clients.start('discord')
+load_clients()
 status_thread = Thread(target = chat_clients.monitor, args = [])
 status_thread.start()
 commands()

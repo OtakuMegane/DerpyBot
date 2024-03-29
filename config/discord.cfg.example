@@ -1,0 +1,7 @@
+[Config]
+token = 
+playing = with Markov chains
+owner_id = 0
+channels = general
+markov_channels = general
+chat_to_console = true

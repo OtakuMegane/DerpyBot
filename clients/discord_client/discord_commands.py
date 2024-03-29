@@ -8,7 +8,7 @@ import common
 import datetime
 
 commands = defaultdict(dict)
-config = common.load_config_file(common.CONFIG_PATH + "custom_discord_commands.cfg")
+config = common.load_config_file(common.CONFIG_PATH + "discord_commands.cfg")
 derpy_stats = None
 
 def list_commands():
