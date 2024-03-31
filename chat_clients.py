@@ -1,8 +1,9 @@
 import importlib
-import importlib.util
 import time
+from threading import Thread
 
 clients = {}
+client_threads = {}
 monitored_clients = {}
 shutting_down = False
 
@@ -14,7 +15,7 @@ def get_client(id):
     if client is None:
         if id == 'discord':
             client = importlib.import_module('clients.discord_client.discord_client')
-            
+
         clients[id] = client
 
     return client
@@ -25,10 +26,14 @@ def start(id):
     if client is None or client.running(False):
         return 
 
-    client.start()
+    importlib.reload(client)
+    client_threads[id] = Thread(target = client.start, args = [])
+    client_threads.get(id).start()
     monitored_clients[id] = client
 
 def stop(id):
+    global monitored_clients
+
     client = get_client(id)
     client.stop()
     del monitored_clients[id]
@@ -43,8 +48,8 @@ def monitor():
             
 def shutdown():
     global shutting_down
-    
+
     shutting_down = True
-    
+
     for id, client in clients.items():
         client.stop()

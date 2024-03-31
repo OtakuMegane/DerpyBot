@@ -1,5 +1,6 @@
 import os
 from configparser import ConfigParser
+import importlib
 
 SCRIPT_BASE_PATH = os.path.dirname(os.path.abspath(__file__)) + "/"
 CONFIG_PATH = SCRIPT_BASE_PATH + "config/"
@@ -7,6 +8,7 @@ CLIENT_CONFIG_PATH = CONFIG_PATH + "clients/"
 CONFIG_DEFAULTS_PATH = CONFIG_PATH + "defaults/"
 shutting_down = False
 markov = None
+derpybot_stats = importlib.import_module('derpy_stats')
 
 def console_print(output, prefix = ''):
     if prefix != '':

@@ -4,19 +4,12 @@ import common
 import derpybot_config
 import chat_clients
 import importlib
-import importlib.util
 import re
-
 import datetime
 import pathlib
-
-import hikari
 import os
 
 version = '0.9.3.12'
-config = ConfigParser(allow_no_value = True)
-
-markov = None
 derpy_stats = None
 status_thread = None
 shutting_down = False
@@ -47,7 +40,7 @@ def commands():
             continue
 
         if "markov" in command_target:
-            markov.incoming_console_command(command)
+            common.markov.incoming_console_command(command)
             continue
 
         if command == "shutdown":
@@ -67,46 +60,24 @@ def console_client_commands(command, arguments):
             chat_clients.stop(arguments[0])
 
 def markov_load(reload):
-    global markov
-
     if not derpybot_config.use_derpymarkov:
         return
 
     common.console_print("Loading markov...", console_prefix)
 
-    return
     if reload:
-        importlib.reload(markov)
+        importlib.reload(common.markov)
     else:
-        markov_package = config.get('Markov', 'markov_package')
-        markov_module = config.get('Markov', 'markov_module')
-        markov = importlib.import_module('modules.' + markov_package + '.' + markov_module)
+        common.markov = importlib.import_module('modules.derpymarkov.markov')
 
-    markov.activate(reload)
-    common.markov = markov
+    common.markov.activate(reload)
 
 def stats_module_load():
-    global derpy_stats
+    #global derpy_stats
 
-    derpy_stats = importlib.import_module('derpy_stats')
-    derpy_stats.add_new_set('derpybot')
-    derpy_stats.update_stats('derpybot', 'start_time', datetime.datetime.now())
-    
-def load_config():
-    global config
-
-    defaults_present = False
-    common.load_config_file(common.CONFIG_PATH + 'defaults.cfg', config)
-
-    if len(config.sections()) != 0:
-        defaults_present = True
-
-    common.load_config_file(common.CONFIG_PATH + 'config.cfg', config)
-    
-    if not defaults_present and len(config.sections()) == 0:
-        common.console_print("Both configuration files config.cfg and defaults.cfg are missing or empty! D:", console_prefix)
-        common.console_print("We can't function like this...", console_prefix)
-        shutdown()
+    #derpy_stats = importlib.import_module('derpy_stats')
+    common.derpybot_stats.add_new_set('derpybot')
+    common.derpybot_stats.update_stats('derpybot', 'start_time', datetime.datetime.now())
 
 def load_clients():
     if derpybot_config.load_discord_client:
@@ -117,16 +88,15 @@ def shutdown():
     shutting_down = True
     common.console_print("Shutting everything down...", console_prefix)
 
-    if markov is not None:
-        if not markov.shutting_down:
-            markov.shutdown()
+    if common.markov is not None:
+        if not common.markov.shutting_down:
+            common.markov.shutdown()
 
     chat_clients.shutdown()
     status_thread.join(1)
     common.console_print("Good night!", console_prefix)
     raise SystemExit
 
-#load_config()
 stats_module_load()
 common.console_print("DerpyBot version " + version, console_prefix)
 markov_load(False)

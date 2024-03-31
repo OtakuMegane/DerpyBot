@@ -17,6 +17,7 @@ command_alias = config.get('Config', 'command_alias', fallback = '!derpy')
 
 channels = []
 for channel in config.get('Config', 'channels', fallback = '').split(','):
+    print(channel.strip())
     channels.append(channel.strip())
 
 all_channels = config.getboolean('Config', 'all_channels', fallback = False)

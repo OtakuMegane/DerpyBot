@@ -1,41 +1,36 @@
 import asyncio
 import discord
 import time
-from configparser import ConfigParser
-import importlib
 from . import discord_commands
 from . import discord_config
 from discord.ext import commands
 from . import utils
 import os
 import common
-import hikari
 
 version = '0.9.2.13'
-client = hikari.GatewayBot(discord_config.token)
+intents = discord.Intents(messages = True)
 discord_client = discord.Client()
 discordpy_legacy = discord.version_info[0] < 1
 ready = False
 console_prefix = "[Discord Client]"
-logged_in = False
 loop = None
+is_running = False
 
 def type():
     return 'discord'
 
 def running(print):
     if print:
-        if client.is_alive:
+        if is_running:
             common.console_print("Client is online.", console_prefix)
         else:
             common.console_print("Client is offline.", console_prefix)
 
-    return client.is_alive
+    return is_running
 
 @discord_client.event
 async def on_ready():
-    global ready
-
     common.console_print(" We have logged in to Discord!", console_prefix)
     common.console_print("  Name: " + discord_client.user.name, console_prefix)
     common.console_print("  ID: " + str(discord_client.user.id), console_prefix)
@@ -46,8 +41,6 @@ async def on_ready():
     except:
         common.console_print("  Could not set 'Playing' status for some reason.", console_prefix)
         common.console_print(" ", console_prefix)
-
-    ready = True
 
 @discord_client.event
 async def on_message(message):
@@ -62,6 +55,7 @@ async def on_message(message):
         return
 
     if message.content == "" or message.content is None:
+        print("empty? " + message.content)
         return
 
     if discordpy_legacy:
@@ -74,6 +68,7 @@ async def on_message(message):
         bot_mentioned = True
         common.console_print("Direct Message from " + message.author.name + ": " + message.content, console_prefix)
     else:
+        print(message.channel.name)
         if not discord_config.all_channels and message.channel.name not in discord_config.channels:
             return
 
@@ -129,22 +124,27 @@ async def on_channel_update(before, after):
         common.console_print("Channel #" + before.name + " has changed to #" + after.name, console_prefix)
 
 def start():
-    global loop
+    global is_running
 
-    if client.is_alive:
+    if is_running:
         return
 
-    common.console_print("Starting Discord client version " + version + "...", console_prefix)
-    discord_commands.load_custom_commands(False)
+    common.console_print("Discord Client version " + version, console_prefix)
+    #discord_commands.load_custom_commands(False, parent_location)
 
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(client.start())
+    if discord_config.token == '':
+        common.console_print("Token is not present. Cannot connect to Discord.", console_prefix)
+        return
+
+    is_running = True
+    discord_client.loop.run_until_complete(discord_client.start(discord_config.token))
+    is_running = False
 
 def stop():
-    if not client.is_alive:
-        return
+    global is_running
 
-    common.console_print("Shutting down Discord client...", console_prefix)
-    loop.run_until_complete(client.close())
+    if is_running:
+        common.console_print("Shutting down client...", console_prefix)
+        future = asyncio.run_coroutine_threadsafe(discord_client.close(), discord_client.loop)
 
+    is_running = False

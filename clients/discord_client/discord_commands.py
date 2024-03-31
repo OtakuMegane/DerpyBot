@@ -9,7 +9,6 @@ import datetime
 
 commands = defaultdict(dict)
 config = common.load_config_file(common.CONFIG_PATH + "discord_commands.cfg")
-derpy_stats = None
 
 def list_commands():
     command_list = []
@@ -97,7 +96,7 @@ def get_commands(message, split_content):
         return "Commands have been reloaded!"
 
     if 'uptime' in split_content[0]:
-        bot_start_time = common.derpy_stats.retrieve_stats('derpybot', 'start_time')
+        bot_start_time = common.derpybot_stats.retrieve_stats('derpybot', 'start_time')
         uptime_delta = datetime.datetime.now() - bot_start_time
         up_m, up_s = divmod(uptime_delta.seconds, 60)
         up_h, up_m = divmod(up_m, 60)
