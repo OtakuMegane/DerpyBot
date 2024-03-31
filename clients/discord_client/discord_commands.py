@@ -91,7 +91,7 @@ def get_commands(message, split_content):
     if 'commands' in split_content[0]:
         return list_commands()
 
-    if 'reload commands' in rejoined and message.author.id in config.owner_ids:
+    if 'reload commands' in rejoined and message.author.id in common.discord_config.owner_ids:
         load_custom_commands(True)
         return "Commands have been reloaded!"
 

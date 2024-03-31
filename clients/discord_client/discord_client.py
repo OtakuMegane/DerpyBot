@@ -9,7 +9,7 @@ import os
 import common
 
 version = '0.9.2.13'
-intents = discord.Intents(messages = True)
+intents = discord.Intents(guilds = True, messages = True)
 discord_client = discord.Client()
 discordpy_legacy = discord.version_info[0] < 1
 ready = False
@@ -130,7 +130,7 @@ def start():
         return
 
     common.console_print("Discord Client version " + version, console_prefix)
-    #discord_commands.load_custom_commands(False, parent_location)
+    discord_commands.load_custom_commands(False)
 
     if discord_config.token == '':
         common.console_print("Token is not present. Cannot connect to Discord.", console_prefix)
