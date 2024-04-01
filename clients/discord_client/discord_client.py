@@ -9,8 +9,8 @@ import os
 import common
 
 version = '0.9.2.13'
-intents = discord.Intents(guilds = True, messages = True)
-discord_client = discord.Client()
+intents = discord.Intents(guilds = True, messages = True, message_content = True)
+discord_client = discord.Client(intents = intents)
 discordpy_legacy = discord.version_info[0] < 1
 ready = False
 console_prefix = "[Discord Client]"
@@ -38,7 +38,7 @@ async def on_ready():
     try:
         playing = discord.Game(discord_config.playing)
         await discord_client.change_presence(activity = playing)
-        common.console_print("  Playing: " + discord_config.playing, console_prefix)
+        common.console_print("  Activity: Playing " + discord_config.playing, console_prefix)
     except:
         common.console_print("  Could not set 'Playing' status for some reason.", console_prefix)
 
@@ -55,7 +55,6 @@ async def on_message(message):
         return
 
     if message.content == "" or message.content is None:
-        print("empty? " + message.content)
         return
 
     if discordpy_legacy:
@@ -68,7 +67,6 @@ async def on_message(message):
         bot_mentioned = True
         common.console_print("Direct Message from " + message.author.name + ": " + message.content, console_prefix)
     else:
-        print(message.channel.name)
         if not discord_config.all_channels and message.channel.name not in discord_config.channels:
             return
 
@@ -113,7 +111,7 @@ async def on_message(message):
                 await message.channel.send(embed = reply)
 
 @discord_client.event
-async def on_channel_update(before, after):
+async def on_guild_channel_update(before, after):
     if after.name != before.name:
         if before.name in discord_config.channels and after.name not in discord_config.channels:
             discord_config.channels.append(after.name)
@@ -137,7 +135,7 @@ def start():
         return
 
     is_running = True
-    discord_client.loop.run_until_complete(discord_client.start(discord_config.token))
+    asyncio.run(discord_client.start(discord_config.token))
     is_running = False
 
 def stop():
@@ -145,6 +143,6 @@ def stop():
 
     if is_running:
         common.console_print("Shutting down client...", console_prefix)
-        future = asyncio.run_coroutine_threadsafe(discord_client.close(), discord_client.loop)
+        asyncio.run_coroutine_threadsafe(discord_client.close(), discord_client.loop)
 
     is_running = False
