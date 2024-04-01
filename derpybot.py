@@ -8,12 +8,21 @@ import re
 import datetime
 import pathlib
 import os
+import sys
 
 version = '0.9.3.12'
 derpy_stats = None
 status_thread = None
 shutting_down = False
 console_prefix = "[DerpyBot]"
+python_min = '3.8'
+
+def startup_check():
+    if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 8):
+        common.console_print("Python " + python_min + " or higher is required.", console_prefix)
+        return False
+
+    return True
 
 def commands():
     common.console_print("Entering command mode...", console_prefix)
@@ -95,6 +104,10 @@ def shutdown():
     chat_clients.shutdown()
     status_thread.join(1)
     common.console_print("Good night!", console_prefix)
+    raise SystemExit
+
+if not startup_check():
+    common.console_print("Starup checks failed. Shutting down...", console_prefix)
     raise SystemExit
 
 stats_module_load()

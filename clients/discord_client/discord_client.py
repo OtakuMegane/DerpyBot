@@ -8,14 +8,26 @@ from . import utils
 import os
 import common
 
-version = '0.9.2.13'
-intents = discord.Intents(guilds = True, messages = True, message_content = True)
+client_version = '0.9.2.13'
+intents = discord.Intents()
+intents.guilds = True
+intents.messages = True
+
+if discord.version_info.major > 1:
+    intents.message_content = True
+
 discord_client = discord.Client(intents = intents)
-discordpy_legacy = discord.version_info[0] < 1
 ready = False
 console_prefix = "[Discord Client]"
 loop = None
 is_running = False
+
+def startup_check():
+    if discord.version_info.major == 1:
+        common.console_print("The installed version of discord.py is too old!", console_prefix)
+        return False
+
+    return True
 
 def type():
     return 'discord'
@@ -127,7 +139,9 @@ def start():
     if is_running:
         return
 
-    common.console_print("Discord Client version " + version, console_prefix)
+
+
+    common.console_print("Discord Client version " + client_version, console_prefix)
     discord_commands.load_custom_commands(False)
 
     if discord_config.token == '':
