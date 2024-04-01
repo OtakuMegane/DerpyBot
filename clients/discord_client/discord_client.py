@@ -36,11 +36,11 @@ async def on_ready():
     common.console_print("  ID: " + str(discord_client.user.id), console_prefix)
 
     try:
-        await discord_client.change_presence(game = discord.Game(name = discord_config.discord_playing))
-        common.console_print("  Playing: " + discord_config.discord_playing, console_prefix)
+        playing = discord.Game(discord_config.playing)
+        await discord_client.change_presence(activity = playing)
+        common.console_print("  Playing: " + discord_config.playing, console_prefix)
     except:
         common.console_print("  Could not set 'Playing' status for some reason.", console_prefix)
-        common.console_print(" ", console_prefix)
 
 @discord_client.event
 async def on_message(message):
