@@ -122,7 +122,7 @@ def incoming_console_command(command):
         get_statistics(True, False)
 
     if command == 'version':
-        common.console_print("derpymarkov " + version, console_prefix)
+        common.console_print("DerpyMarkov " + version, console_prefix)
 
 def incoming_message_command(command):
     if not accepting_input():
@@ -133,7 +133,7 @@ def incoming_message_command(command):
         return stats
 
     if command == 'version':
-        return "derpymarkov version: " + version
+        return "DerpyMarkov version: " + version
 
     return None
 
@@ -197,7 +197,7 @@ def incoming_message(message, client_name, bot_paged, do_learn):
 
 def prepare_message(message):
     """
-    So some filtering on the raw message before sending it to the markov
+    Do some filtering on the raw message before sending it to the markov
     chain.
     """
     message = message.replace('"', '')
