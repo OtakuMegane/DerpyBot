@@ -18,7 +18,7 @@ if config.has_section('General'):
     main_dictionary_format = config.get('General', 'main_dictionary_format', fallback = 'lines')
     supplementary_text_filename = config.get('General', 'supplementary_text_file', fallback = 'moar-lines.txt')
     supplementary_text_file = dictionary_directory + '/' + supplementary_text_filename
-    state_size1 = config.getint('General', 'state_size', fallback = 1)
+    state_size = config.getint('General', 'state_size', fallback = 1)
     learn = config.getboolean('General', 'learn', fallback = True)
     save_interval = config.getint('General', 'save_interval', fallback = 900)
     update_stats_on_learn = config.getboolean('General', 'update_stats_on_learn', fallback = False)

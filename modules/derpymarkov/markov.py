@@ -1,5 +1,7 @@
 from . import config
 from . import derpymodel
+from . import derpy_common
+from . import generator
 import importlib
 import re
 import random
@@ -11,49 +13,31 @@ import common
 from collections import defaultdict
 
 version = '0.9.3.14'
-
-model = None
-unsaved = False
 lines = list()
-test_kwargs = {'max_overlap_ratio': config.max_overlap_ratio,
-               'max_overlap_total': config.max_overlap_total,
-               'test_output': config.test_output}
-
-if config.sentence_max_words > 0:
-    test_kwargs['max_words'] = config.sentence_max_words
-
-uri_regex = re.compile("[^\s]*:\/\/[^\s]*")
-emoticon_regex = re.compile(":[DPO]|D:|[X|x]D|[Oo][_-][Oo]")
-hashtag_user_regex = re.compile("^[@#][^\s]*")
-
 commands = defaultdict(dict)
-shutting_down = False
 unique_words = set()
 unique_word_count = 0
 line_count = 0
 word_count = 0
 context_count = 0
-console_prefix = "[DerpyMarkov] "
-doing_chain = False
+console_prefix = "[DerpyMarkov]"
+shutting_down = True
 
 def reload():
     importlib.reload(config)
 
 def accepting_input():
-    if not shutting_down:
-        return True
-
-    return False
+    return not shutting_down
 
 def activate(reload):
     """
     Load and initialize everything then get markov running.
     """
 
-    global model, lines, main_dictionary_file, shutting_down, doing_chain
+    global shutting_down, lines, main_dictionary_file
 
     shutting_down = False
-    doing_chain = False
+    derpy_common.doing_chain = False
 
     if reload:
         reload()
@@ -65,19 +49,22 @@ def activate(reload):
     if input_text == '':
         input_text = 'derp'
 
-    model = derpymodel.DerpyText(input_text, state_size = config.state_size1)
+    derpy_common.model = derpymodel.DerpyText(input_text, state_size = config.state_size)
     lines = generate_lines_from_model(True)
-    get_statistics(True, False)
+    
+    for stat_line in get_statistics(True):
+        common.console_print(stat_line, console_prefix)
+
     common.console_print("Normal reply rate is " + str(config.reply_rate) + " and bot name reply rate is " + str(config.bot_name_reply_rate) + ".", console_prefix)
     common.console_print("The save interval is " + str(config.save_interval) + " seconds.", console_prefix)
     del input_text
     setup_commands()
 
-def get_statistics(print_to_console, return_formatted):
+def get_statistics(formatted):
     """
     Gets a dict of various statistics and returns them.
     
-    print: If True, we print the statistics to console as well.
+    If formatted is true, return lines of formatted output.
     """
 
     update_stats()
@@ -85,20 +72,16 @@ def get_statistics(print_to_console, return_formatted):
     stats['line_count'] = line_count
     stats['word_count'] = word_count
     stats['unique_word_count'] = unique_word_count
-    stats['state_size'] = model.state_size
+    stats['state_size'] = derpy_common.model.state_size
     stats['context_count'] = context_count
 
-    output = []
-    output.append("I know " + str(line_count) + " lines containing a total of " + str(word_count) + " words.")
-    output.append(str(unique_word_count) + " of those words are unique.")
-    output.append("We are currently using a state size of " + str(model.state_size) + " which generated " + str(context_count) + " contexts.")
-
-    if print_to_console:
-        for entry in output:
-            common.console_print(entry, console_prefix)
-
-    if return_formatted:
-        return "\n".join(output)
+    if formatted:
+        output = []
+        output.append("I know " + str(line_count) + " lines containing a total of " + str(word_count) + " words.")
+        output.append(str(unique_word_count) + " of those words are unique.")
+        output.append("We are currently using a state size of " + str(derpy_common.model.state_size) + " which generated " + str(context_count) + " contexts.")
+        #return "\n".join(output)
+        return output
 
     return stats
 
@@ -111,30 +94,31 @@ def setup_commands():
 def get_command_list():
     return commands
 
-def incoming_console_command(command):
+def incoming_command(command, from_console):
     if not accepting_input():
         return
-
-    if command == 'shutdown':
+    
+    if from_console and command == 'shutdown':
         shutdown()
+        return
 
     if command == 'statistics':
-        get_statistics(True, False)
+        stats_output = get_statistics(True)
+
+        if from_console:
+            for entry in stats_output:
+                common.console_print(entry, console_prefix)
+                
+        return stats_output
 
     if command == 'version':
-        common.console_print("DerpyMarkov " + version, console_prefix)
+        version_output = "DerpyMarkov version: " + version
+        
+        if from_console:
+            common.console_print(version_output, console_prefix)
 
-def incoming_message_command(command):
-    if not accepting_input():
-        return None
-
-    if command == 'statistics':
-        stats = get_statistics(False, True)
-        return stats
-
-    if command == 'version':
-        return "DerpyMarkov version: " + version
-
+        return version_output
+    
     return None
 
 def incoming_message(message, client_name, bot_paged, do_learn):
@@ -147,15 +131,13 @@ def incoming_message(message, client_name, bot_paged, do_learn):
     client_name: The current name of the client sending content.
     """
 
-    global doing_chain
-
     if not accepting_input():
         return None
 
     if not isinstance(message, str) or message == "" or message is None:
         return None
 
-    while doing_chain:
+    while derpy_common.doing_chain:
         time.sleep(0.05)
 
     make_reply = False
@@ -189,10 +171,10 @@ def incoming_message(message, client_name, bot_paged, do_learn):
         make_reply = reply_rand <= config.reply_rate
 
     if make_reply:
-        doing_chain = True
-        reply = compose_reply(prepared_message)
+        derpy_common.doing_chain = True
+        reply = generator.compose_reply(prepared_message)
 
-    doing_chain = False
+    derpy_common.doing_chain = False
     return reply
 
 def prepare_message(message):
@@ -206,133 +188,13 @@ def prepare_message(message):
     if not config.preserve_case:
         # Check for case-sensitive things such as URIs and preserve them
         for index, substring in enumerate(split_message):
-            if not uri_regex.match(substring)\
-            and not emoticon_regex.match(substring)\
-            and not hashtag_user_regex.match(substring):
+            if not derpy_common.uri_regex.match(substring)\
+            and not derpy_common.emoticon_regex.match(substring)\
+            and not derpy_common.hashtag_user_regex.match(substring):
                 split_message[index] = substring.lower()
 
     filtered_message = ' '.join(split_message)
     return filtered_message
-
-def choose_key_phrase(words):
-    """
-    Used to derive a keyword or phrase from the given text.
-    
-    words: Input text to be used for key words or phrases.
-    """
-
-    wordlist = model.word_split(words)
-    index = random.randint(0, len(wordlist))
-    key_phrase = wordlist[index - 1]
-    return key_phrase
-
-def get_sentence(words, key_phrase):
-    """
-    We generate sentences here and return them. Starts with the basic
-    make_sentence and checks for any keywords (or returns the sentence if
-    keywords are disabled). This gives the nicest results but tends to fail
-    for words that are uncommon in a dictionary
-    
-    If the first method fails we attempt making a sentence with a starting
-    key word which has a better rate of success but the possible responses
-    are more limited and can feel repetitive if everything was done this way.
-    
-    words: Input text to be used for key words or phrases.
-    key_phrase: A specific keyword or phrase can be sent for use instead.
-    """
-
-    if config.use_keywords:
-        if config.try_all_words_for_key:
-            wordlist = model.word_split(words)
-            random.shuffle(wordlist)
-        else:
-            if key_phrase is not None:
-                wordlist = key_phrase
-
-    counter = 0
-    final_sentence = None
-    
-    while counter < config.sentence_with_key_tries:
-        counter += 1
-
-        try:
-            attempt = model.make_sentence(tries = 1, **test_kwargs)
-        except KeyError as error:
-            attempt = None
-
-        if attempt is not None:
-            if config.use_keywords:
-                if final_sentence is None:
-                    for word in wordlist:
-                        if re.search(r'\b' + re.escape(word) + r'\b', attempt, re.IGNORECASE) is not None:
-                            final_sentence = attempt
-                            break
-            else:
-                final_sentence = attempt
-                break
-
-    if final_sentence is None:
-        try:
-            for word in wordlist:
-                final_sentence = model.make_sentence_with_start(word, strict = False, **test_kwargs)
-                
-                if final_sentence is not None:
-                    break
-        except (KeyError, markovify.text.ParamError) as error:
-            final_sentence = None
-
-    if final_sentence is not None:
-        final_sentence = clean_up_punctuation(final_sentence)
-        
-    return final_sentence
-
-def clean_up_punctuation(sentence):
-    sentence_fragments = model.word_split(sentence)
-    unmatched_open = -1
-    unmatched_close = -1
-    
-    for index, fragment in enumerate(sentence_fragments, start = 1):
-        if '(' in fragment:
-            unmatched_open = index - 1
-        
-        if ')' in fragment:
-            if unmatched_open != -1:
-                unmatched_open = -1
-            else:
-                unmatched_close = index - 1
-
-    if unmatched_open != -1:
-        if len(sentence_fragments) > unmatched_open + 1:
-            random_index = random.randrange(unmatched_open + 1, len(sentence_fragments))
-        else:
-            random_index = len(sentence_fragments);
-
-        sentence_fragments[random_index] = sentence_fragments[random_index] + ')'
-
-    if unmatched_close != -1:
-        if unmatched_close < 2:
-            sentence_fragments[unmatched_close] = '(' + sentence_fragments[unmatched_close]
-        else:
-            random_index = random.randrange(0, unmatched_close - 1)
-            sentence_fragments[random_index] = sentence_fragments[random_index] + '('
-        
-    sentence = ' '.join(sentence_fragments)
-    return sentence
-    
-def compose_reply(message):
-    key_phrase = None
-    sentence = None
-
-    if config.use_keywords:
-        key_phrase = choose_key_phrase(message)
-
-    sentence = get_sentence(message, key_phrase)
-    reply = sentence
-
-    if reply == message:
-        reply = ""
-
-    return reply
 
 def learn(text):
     """
@@ -341,40 +203,38 @@ def learn(text):
     text: Content to be learned.
     """
 
-    global model, unsaved
-
     if not config.learn:
         return
 
-    unsaved = True
+    derpy_common.unsaved = True
 
-    parsed_sentences = list(model.generate_corpus(text))
-    lines.extend(list(map(model.word_join, parsed_sentences)))
+    parsed_sentences = list(derpy_common.model.generate_corpus(text))
+    lines.extend(list(map(derpy_common.model.word_join, parsed_sentences)))
 
     if config.update_stats_on_learn:
         update_stats(parsed_sentences)
 
-    new_model = derpymodel.DerpyText(text, state_size = config.state_size1)
-    model = markovify.combine([ model, new_model ])
+    new_model = derpymodel.DerpyText(text, state_size = config.state_size)
+    derpy_common.model = markovify.combine([ derpy_common.model, new_model ])
 
 def update_stats(parsed_sentences = None):
     global line_count, context_count, word_count, unique_words, unique_word_count
 
     if parsed_sentences is None:
         word_count = 0
-        parsed_sentences = model.parsed_sentences
+        parsed_sentences = derpy_common.model.parsed_sentences
 
-    for sentence in model.parsed_sentences:
+    for sentence in derpy_common.model.parsed_sentences:
         for word in sentence:
             word_count += 1
             unique_words.add(word)
 
     line_count = len(lines)
-    context_count = len(model.chain.model)
+    context_count = len(derpy_common.model.chain.model)
     unique_word_count = len(unique_words)
 
 def generate_lines_from_model(sort):
-    lines = list(map(model.word_join, model.parsed_sentences))
+    lines = list(map(derpy_common.model.word_join, derpy_common.model.parsed_sentences))
 
     if sort:
         return sorted(lines)
@@ -386,9 +246,8 @@ def save():
     Writes the current lines to file. If no changes have been detected since
     last save we don't need to do anything.
     """
-    global unsaved
 
-    if not unsaved:
+    if not derpy_common.unsaved:
         return
 
     common.console_print("Saving lines...", console_prefix)
@@ -399,7 +258,7 @@ def save():
 
     if not os.path.exists(config.main_dictionary_file):
         os.makedirs(config.absolute_dictionary_directory, exist_ok = True)
-        common.console_print(config.main_dictionary_filename + " was not found. Creating new file...", console_prefix)
+        common.console_print(config.main_dictionary_filename + " was not found. Creating new file for saving.", console_prefix)
 
     with threading.Lock():
         with open(config.main_dictionary_file, '+w', encoding = "utf8") as text:
@@ -407,17 +266,16 @@ def save():
             text.close()
 
     common.console_print("Lines saved!", console_prefix)
-    unsaved = False
+    derpy_common.unsaved = False
 
 def shutdown():
     """ 
     Let's do a clean shutdown here.
     """
 
-    global model, shutting_down
     shutting_down = True
     save()
-    del model
+    del derpy_common.model
     common.console_print("DerpyMarkov is shutting down now.", console_prefix)
     return True
 

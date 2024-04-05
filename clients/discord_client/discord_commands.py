@@ -86,7 +86,7 @@ def get_commands(message, split_content):
 
     if 'markov' in split_content[0]:
         split_content.pop(0)
-        return common.markov.incoming_message_command(' '.join(split_content))
+        return common.markov.incoming_command(' '.join(split_content), False)
 
     if 'commands' in split_content[0]:
         return list_commands()

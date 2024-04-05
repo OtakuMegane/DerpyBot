@@ -49,7 +49,7 @@ def commands():
             continue
 
         if "markov" in command_target:
-            common.markov.incoming_console_command(command)
+            common.markov.incoming_command(command, True)
             continue
 
         if command == "shutdown":
@@ -82,9 +82,6 @@ def markov_load(reload):
     common.markov.activate(reload)
 
 def stats_module_load():
-    #global derpy_stats
-
-    #derpy_stats = importlib.import_module('derpy_stats')
     common.derpybot_stats.add_new_set('derpybot')
     common.derpybot_stats.update_stats('derpybot', 'start_time', datetime.datetime.now())
 
