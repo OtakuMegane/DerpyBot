@@ -69,10 +69,7 @@ async def on_message(message):
     if message.content == "" or message.content is None:
         return
 
-    if discordpy_legacy:
-        is_private = message.channel.is_private
-    else:
-        is_private = isinstance(message.channel, discord.abc.PrivateChannel)
+    is_private = isinstance(message.channel, discord.abc.PrivateChannel)
 
     if is_private:
         markov_learn = discord_config.markov_dms
@@ -112,15 +109,9 @@ async def on_message(message):
                 common.console_print("Message to #" + message.channel.name + ": " + reply, console_prefix)
 
         if isinstance(reply, str):
-            if discordpy_legacy:
-                await discord_client.send_message(message.channel, reply)
-            else:
-                await message.channel.send(reply)
+            await message.channel.send(reply)
         else:
-            if discordpy_legacy:
-                await discord_client.send_message(message.channel, embed = reply)
-            else:
-                await message.channel.send(embed = reply)
+            await message.channel.send(embed = reply)
 
 @discord_client.event
 async def on_guild_channel_update(before, after):
