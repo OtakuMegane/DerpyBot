@@ -8,7 +8,7 @@ from . import utils
 import os
 import common
 
-client_version = '0.9.2.13'
+client_version = '0.9.4'
 intents = discord.Intents()
 intents.guilds = True
 intents.messages = True

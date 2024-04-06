@@ -10,7 +10,7 @@ import pathlib
 import os
 import sys
 
-version = '0.9.3.12'
+version = '0.9.4'
 derpy_stats = None
 status_thread = None
 shutting_down = False

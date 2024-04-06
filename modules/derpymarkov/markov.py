@@ -12,7 +12,7 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.3.14'
+version = '0.9.4'
 lines = list()
 commands = defaultdict(dict)
 unique_words = set()
