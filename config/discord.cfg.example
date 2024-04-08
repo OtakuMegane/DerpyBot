@@ -1,7 +1,8 @@
 [Config]
 token = 
 playing = with Markov chains
-owner_id = 0
+owner_ids = 0
+command_alias = !derpy
 channels = general
 markov_channels = general
 chat_to_console = true
