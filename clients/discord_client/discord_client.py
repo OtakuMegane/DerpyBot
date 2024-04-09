@@ -74,7 +74,7 @@ async def on_message(message):
     if is_private:
         markov_learn = discord_config.markov_dms
         bot_mentioned = True
-        common.console_print("Direct Message from " + message.author.name + ": " + message.content, console_prefix)
+        common.console_print("Direct Message from " + message.author.name + ": " + message.clean_content, console_prefix)
     else:
         if not discord_config.all_channels and message.channel.name not in discord_config.channels:
             return
@@ -82,7 +82,7 @@ async def on_message(message):
         if discord_config.markov_all_channels or message.channel.name in discord_config.markov_channels:
             markov_learn = True
 
-        common.console_print("Message from #" + message.channel.name + ": " + message.content, console_prefix)
+        common.console_print("Message from #" + message.channel.name + ": " + message.clean_content, console_prefix)
 
     split_content = message.clean_content.split()
     command_check = split_content.pop(0)
