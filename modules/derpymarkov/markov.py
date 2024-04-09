@@ -80,7 +80,6 @@ def get_statistics(formatted):
         output.append("I know " + str(line_count) + " lines containing a total of " + str(word_count) + " words.")
         output.append(str(unique_word_count) + " of those words are unique.")
         output.append("We are currently using a state size of " + str(derpy_common.model.state_size) + " which generated " + str(context_count) + " contexts.")
-        #return "\n".join(output)
         return output
 
     return stats
@@ -185,13 +184,16 @@ def prepare_message(message):
     message = message.replace('"', '')
     split_message = message.split()
 
-    if not config.preserve_case:
-        # Check for case-sensitive things such as URIs and preserve them
+    if not config.preserve_message_case:
         for index, substring in enumerate(split_message):
-            if not derpy_common.uri_regex.match(substring)\
-            and not derpy_common.emoticon_regex.match(substring)\
-            and not derpy_common.hashtag_user_regex.match(substring):
-                split_message[index] = substring.lower()
+            # Check for case-sensitive things such as URLs and preserve them.
+            if config.preserve_special_case:
+                if derpy_common.uri_regex.match(substring)\
+                or derpy_common.emoticon_regex.match(substring)\
+                or derpy_common.hashtag_user_regex.match(substring):
+                    continue
+            
+            split_message[index] = substring.lower() 
 
     filtered_message = ' '.join(split_message)
     return filtered_message
@@ -210,10 +212,6 @@ def learn(text):
 
     parsed_sentences = list(derpy_common.model.generate_corpus(text))
     lines.extend(list(map(derpy_common.model.word_join, parsed_sentences)))
-
-    if config.update_stats_on_learn:
-        update_stats(parsed_sentences)
-
     new_model = derpymodel.DerpyText(text, state_size = config.state_size)
     derpy_common.model = markovify.combine([ derpy_common.model, new_model ])
 

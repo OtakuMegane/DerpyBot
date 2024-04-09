@@ -1,7 +1,6 @@
 [General]
 dictionary_directory = dictionaries
-main_dictionary_file = lines.txt
-supplementary_text_file = moar-lines.txt
+main_dictionary_file = main.txt
 state_size = 1
 learn = true
 save_interval = 900
@@ -16,8 +15,11 @@ use_keywords = true
 try_all_words_for_key = true
 sentence_with_key_tries = 100
 test_output = true
-max_overlap_ratio = 0.80
-max_overlap_total = 15
 random_on_key_fail = false
 
+[Post Process]
+fix_punctuation = true
+
 [Learn]
+preserve_message_case = false
+preserve_special_case = true

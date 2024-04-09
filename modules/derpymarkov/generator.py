@@ -52,6 +52,7 @@ def get_sentence(words, key_phrase):
     words: Input text to be used for key words or phrases.
     key_phrase: A specific keyword or phrase can be sent for use instead.
     """
+    wordlist = []
 
     if config.use_keywords:
         if config.try_all_words_for_key:
@@ -59,9 +60,10 @@ def get_sentence(words, key_phrase):
             random.shuffle(wordlist)
         else:
             if key_phrase is not None:
-                wordlist = key_phrase
+                wordlist = [key_phrase]
 
     counter = 0
+    sentence = None
     final_sentence = None
     attempt = None
 
@@ -77,31 +79,41 @@ def get_sentence(words, key_phrase):
             continue
 
         if config.use_keywords:
-            if final_sentence is None:
-                for word in wordlist:
-                    if re.search(r'\b' + re.escape(word) + r'\b', attempt, re.IGNORECASE) is not None:
-                        final_sentence = attempt
-                        break
+            for word in wordlist:
+                if re.search(r'\b' + re.escape(word) + r'\b', attempt, re.IGNORECASE) is not None:
+                    sentence = attempt
+                    break
         else:
-            final_sentence = attempt
+            sentence = attempt
+
+        if sentence is not None:
             break
 
-    if final_sentence is None:
+    if sentence is None:
         try:
             for word in wordlist:
-                final_sentence = derpy_common.model.make_sentence_with_start(word, strict = False, **test_kwargs)
-                
-                if final_sentence is not None:
+                sentence = derpy_common.model.make_sentence_with_start(word, strict = False, **test_kwargs)
+
+                if sentence is not None:
                     break
         except (KeyError, markovify.text.ParamError) as error:
-            final_sentence = None
+            sentence = None
 
-    if final_sentence is not None:
-        final_sentence = clean_up_punctuation(final_sentence)
-        
+    if sentence is None and config.random_on_key_fail:
+        sentence = derpy_common.model.make_sentence(tries = 3, **test_kwargs)
+
+    if sentence is not None:
+        final_sentence = post_process(sentence)
+
     return final_sentence
 
-def clean_up_punctuation(sentence):
+def post_process(sentence):
+    if config.fix_punctuation:
+        sentence = punctuation_cleanup(sentence)
+        
+    return sentence
+    
+def punctuation_cleanup(sentence):
     sentence_fragments = derpy_common.model.word_split(sentence)
     unmatched_open = -1
     unmatched_close = -1
