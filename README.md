@@ -12,7 +12,7 @@ General:
  To use the Discord client:
  - [discord.py 2.0+](https://github.com/Rapptz/discord.py)
  
-## General Setup ##
+## Basic Setup ##
 1. In the main `config` folder rename `derpybot.cfg.example` to `derpybot.cfg` then adjust settings as needed.
 2. To enable the Discord client:
  - Rename `discord.cfg.example` to `discord.cfg` then adjust settings as needed.
@@ -29,6 +29,8 @@ The Markov dictionaries are stored in `derpymarkov/dictionaries`. The format use
 An option to add supplementary dictionaries to the main one is planned for the future.
 
 ## Discord ##
+Due to processing and storage needs it's not practical to have DerpyBot function as a centralized multi-server bot. This means you will need to [setup a bot account](https://discordpy.readthedocs.io/en/stable/discord.html) in the developer portal for your particular instance. During the process of setup you will also need to enable the [Privileged Intent](https://support-dev.discord.com/hc/en-us/articles/6207308062871-What-are-Privileged-Intents) for message content.
+
 It is possible to add simple custom commands for use in the Discord client. At present these are only commands to post content, they can't do any other functions. Commands are defined in the `discord_commands.cfg` found in the main `config` folder. The example file can be used for reference.
 
 ## License
