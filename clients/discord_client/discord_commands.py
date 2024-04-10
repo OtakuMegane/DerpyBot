@@ -3,31 +3,29 @@ import pkg_resources
 import discord
 import re
 import os
-from collections import defaultdict
 import common
 import datetime
 
-commands = defaultdict(dict)
+custom_commands = {}
+custom_commands['triggers'] = {}
+custom_commands['data'] = {}
 config = common.load_config_file(common.CONFIG_PATH + "discord_commands.cfg")
 
 def list_commands():
-    command_list = []
+    command_list = ["__Discord Custom Commands__"]
 
-    for command in commands:
-        if commands[command]['base_command'] is None:
-            command_list.append(command)
-            aliased = ""
-            description = ""
+    for command_data in custom_commands['data'].values():
+        aliased = ""
+        description = ""
 
-            if commands[command]['aliases'] is not None:
-                aliased = " (aliases: " + ', '.join(commands[command]['aliases']) + ")"
+        if command_data['aliases']:
+            aliased = " (aliases: " + ', '.join(command_data['aliases']) + ")"
 
-            if commands[command]['description'] is not None:
-                description = "**  " + commands[command]['description'] + "** "
+        if command_data['description']:
+            description = "**  " + command_data['description'] + "** "
 
-            command_list[command_list.index(command)] = command + aliased + description
+        command_list.append(command_data['base_command'] + aliased + description)
 
-    command_list.insert(0, "__Discord Commands__")
     command_output = '**\n**'.join(sorted(command_list, key = str.lower))
     markov_commands = common.markov.get_command_list()
     markov_command_list = []
@@ -39,7 +37,7 @@ def list_commands():
     for command in markov_commands:
         description = ""
 
-        if markov_commands[command]['description'] is not None:
+        if markov_commands[command]['description']:
             description = "**  " + markov_commands[command]['description'] + "** "
 
         markov_command_list.append(command + description)
@@ -49,10 +47,12 @@ def list_commands():
     return "**" + command_output + "**"
 
 def load_custom_commands(reload):
-    global commands
+    global custom_commands
 
     if reload:
-        commands = defaultdict(dict)
+        custom_commands = {}
+        custom_commands['triggers'] = {}
+        custom_commands['data'] = {}
 
     if len(config.sections()) == 0:
         return
@@ -60,23 +60,19 @@ def load_custom_commands(reload):
     sections = config.sections()
 
     for section in sections:
-        if config.has_option(section, 'content'):
-            commands[section]['content'] = config.get(section, 'content')
+        custom_commands['triggers'].update({section:section})
+        custom_commands['data'][section] = {}
+        custom_commands['data'][section]['base_command'] = section
+        custom_commands['data'][section]['aliases'] = []
+        custom_commands['data'][section]['content'] = config.get(section, 'content', fallback = '')
+        custom_commands['data'][section]['description'] = config.get(section, 'description', fallback = None)
 
-        commands[section]['base_command'] = None
-        commands[section]['aliases'] = None
-        commands[section]['description'] = None
+        aliases = config.get(section, 'alias_commands', fallback = None)
 
-        if config.has_option(section, 'alias_commands'):
-            alternates = config.get(section, 'alias_commands').split(',')
-            commands[section]['aliases'] = alternates
-
-            for alternate in alternates:
-                alternate = alternate.strip()
-                commands[alternate]['base_command'] = section
-
-        if config.has_option(section, 'description'):
-            commands[section]['description'] = config.get(section, 'description')
+        if aliases:
+            for alias in aliases.split(','):
+                custom_commands['data'][section]['aliases'].append(alias)
+                custom_commands['triggers'].update({alias.casefold():section})
 
 def get_commands(message, split_content):
     rejoined = ' '.join(split_content)
@@ -93,7 +89,7 @@ def get_commands(message, split_content):
 
     if 'reload commands' in rejoined and message.author.id in common.discord_config.owner_ids:
         load_custom_commands(True)
-        return "Commands have been reloaded!"
+        return "Custom commands have been reloaded!"
 
     if 'uptime' in split_content[0]:
         bot_start_time = common.derpybot_stats.retrieve_stats('derpybot', 'start_time')
@@ -104,11 +100,9 @@ def get_commands(message, split_content):
         uptime = "I has been running for: {3} days, {2} hours, {1} minutes, {0} seconds".format(up_s, up_m, up_h, up_d)
         return uptime
 
-    for command in commands:
-        if re.match(re.escape(command) + r'([^\w]|$)', rejoined) is not None:
-            if commands[command]['base_command'] is not None:
-                command = commands[command]['base_command']
+    base_command = custom_commands['triggers'].get(rejoined.casefold())
 
-            return commands[command]['content']
+    if base_command:
+        return custom_commands['data'][base_command]['content']
 
     return None
