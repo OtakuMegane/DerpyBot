@@ -8,7 +8,8 @@ from . import utils
 import os
 import common
 
-client_version = '0.9.4'
+VERSION = 'v0.9.4'
+common.versions.update({'discord_client':VERSION})
 intents = discord.Intents()
 intents.guilds = True
 intents.messages = True
@@ -132,7 +133,7 @@ def start():
 
 
 
-    common.console_print("Discord Client version " + client_version, console_prefix)
+    common.console_print("Discord Client version " + common.versions.get('discord_client'), console_prefix)
     discord_commands.load_custom_commands(False)
 
     if discord_config.token == '':

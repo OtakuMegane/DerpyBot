@@ -9,6 +9,7 @@ CONFIG_DEFAULTS_PATH = CONFIG_PATH + "defaults/"
 shutting_down = False
 markov = None
 derpybot_stats = importlib.import_module('derpy_stats')
+versions = {}
 
 def console_print(output, prefix = ''):
     if prefix != '':

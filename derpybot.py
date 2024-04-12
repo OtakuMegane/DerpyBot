@@ -10,16 +10,17 @@ import pathlib
 import os
 import sys
 
-version = '0.9.4'
+VERSION = 'v0.9.4'
+common.versions.update({'derpybot':VERSION})
+common.versions.update({'python_min':'3.8'})
 derpy_stats = None
 status_thread = None
 shutting_down = False
 console_prefix = "[DerpyBot]"
-python_min = '3.8'
 
 def startup_check():
     if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 8):
-        common.console_print("Python " + python_min + " or higher is required.", console_prefix)
+        common.console_print("Python " + common.versions.get('python_min') + " or higher is required.", console_prefix)
         return False
 
     return True
@@ -108,7 +109,7 @@ if not startup_check():
     raise SystemExit
 
 stats_module_load()
-common.console_print("DerpyBot version " + version, console_prefix)
+common.console_print("DerpyBot version " + common.versions.get('derpybot'), console_prefix)
 markov_load(False)
 load_clients()
 status_thread = Thread(target = chat_clients.monitor, args = [])

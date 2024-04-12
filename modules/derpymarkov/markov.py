@@ -12,7 +12,8 @@ import os
 import common
 from collections import defaultdict
 
-version = '0.9.4'
+VERSION = 'v0.9.4'
+common.versions.update({'derpymarkov':VERSION})
 lines = list()
 commands = defaultdict(dict)
 unique_words = set()
@@ -42,7 +43,7 @@ def activate(reload):
     if reload:
         reload()
 
-    common.console_print("DerpyMarkov version " + version, console_prefix)
+    common.console_print("DerpyMarkov version " + common.versions.get('derpymarkov'), console_prefix)
     common.console_print("Loading main dictionary...", console_prefix)
     input_text = common.text_file_read(config.main_dictionary_file)
 
@@ -111,7 +112,7 @@ def incoming_command(command, from_console):
         return stats_output
 
     if command == 'version':
-        version_output = "DerpyMarkov version: " + version
+        version_output = "DerpyMarkov version: " + common.versions.get('derpymarkov')
         
         if from_console:
             common.console_print(version_output, console_prefix)
