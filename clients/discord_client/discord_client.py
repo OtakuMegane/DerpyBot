@@ -1,51 +1,59 @@
 import asyncio
 import discord
-import threading
 import time
-from configparser import ConfigParser
-import importlib
 from . import discord_commands
-from . import config
+from . import discord_config
 from discord.ext import commands
 from . import utils
 import os
 import common
 
-version = '0.9.2.13'
+VERSION = 'v0.9.4'
+common.versions.update({'discord_client':VERSION})
+intents = discord.Intents()
+intents.guilds = True
+intents.messages = True
 
-discord_client = discord.Client()
-discordpy_legacy = discord.version_info[0] < 1
+if discord.version_info.major > 1:
+    intents.message_content = True
+
+discord_client = discord.Client(intents = intents)
 ready = False
-run_failure = False
-markov = None
-derpy_stats = None
-console_prefix = "[Discord Client] "
-logged_in = False
+console_prefix = "[Discord Client]"
+loop = None
+is_running = False
 
-def logged_in():
-    return logged_in
+def startup_check():
+    if discord.version_info.major == 1:
+        common.console_print("The installed version of discord.py is too old!", console_prefix)
+        return False
 
-def still_running(print):
-    if print:
-        common.console_print("Client still running! Logged in? " + str(logged_in()), console_prefix)
     return True
+
+def type():
+    return 'discord'
+
+def running(print):
+    if print:
+        if is_running:
+            common.console_print("Client is online.", console_prefix)
+        else:
+            common.console_print("Client is offline.", console_prefix)
+
+    return is_running
 
 @discord_client.event
 async def on_ready():
-    global ready
-
     common.console_print(" We have logged in to Discord!", console_prefix)
     common.console_print("  Name: " + discord_client.user.name, console_prefix)
     common.console_print("  ID: " + str(discord_client.user.id), console_prefix)
 
     try:
-        await discord_client.change_presence(game = discord.Game(name = config.discord_playing))
-        common.console_print("  Playing: " + config.discord_playing, console_prefix)
+        playing = discord.Game(discord_config.playing)
+        await discord_client.change_presence(activity = playing)
+        common.console_print("  Activity: Playing " + discord_config.playing, console_prefix)
     except:
         common.console_print("  Could not set 'Playing' status for some reason.", console_prefix)
-        common.console_print(" ", console_prefix)
-
-    ready = True
 
 @discord_client.event
 async def on_message(message):
@@ -53,7 +61,7 @@ async def on_message(message):
     markov_learn = False
     bot_mentioned = discord_client.user in message.mentions
 
-    if message.author.bot and config.ignore_bots:
+    if message.author.bot and discord_config.ignore_bots:
         return
 
     if message.author == discord_client.user:
@@ -62,104 +70,85 @@ async def on_message(message):
     if message.content == "" or message.content is None:
         return
 
-    if discordpy_legacy:
-        is_private = message.channel.is_private
-    else:
-        is_private = isinstance(message.channel, discord.abc.PrivateChannel)
+    is_private = isinstance(message.channel, discord.abc.PrivateChannel)
 
     if is_private:
-        markov_learn = config.markov_learn_dm
+        markov_learn = discord_config.markov_dms
         bot_mentioned = True
-        common.console_print("Direct Message from " + message.author.name + ": " + message.content, console_prefix)
+        common.console_print("Direct Message from " + message.author.name + ": " + message.clean_content, console_prefix)
     else:
-        if not config.discord_all_channels and message.channel.name not in config.discord_channels:
+        if not discord_config.all_channels and message.channel.name not in discord_config.channels:
             return
 
-        if config.discord_markov_all_channels or message.channel.name in config.discord_markov_channels:
+        if discord_config.markov_all_channels or message.channel.name in discord_config.markov_channels:
             markov_learn = True
 
-        common.console_print("Message from #" + message.channel.name + ": " + message.content, console_prefix)
+        common.console_print("Message from #" + message.channel.name + ": " + message.clean_content, console_prefix)
 
     split_content = message.clean_content.split()
     command_check = split_content.pop(0)
 
-    if config.command_alias == command_check:
+    if discord_config.command_alias == command_check:
         reply = discord_commands.get_commands(message, split_content)
     else:
-        if markov is not None:
-            if config.raw_to_markov:
+        if common.markov is not None:
+            if discord_config.raw_to_markov:
                 markov_text = message.content
             else:
                 markov_text = message.clean_content
 
-            reply = markov.incoming_message(markov_text, discord_client.user.name, bot_mentioned, markov_learn)
+            reply = common.markov.incoming_message(markov_text, discord_client.user.name, bot_mentioned, markov_learn)
 
     if reply != "" and reply is not None:
-        if config.clean_output:
+        if discord_config.clean_output:
             reply = utils.clean_mentions(reply, discord_client)
 
-        if config.chat_to_console:
+        if discord_config.chat_to_console:
             if is_private:
                 common.console_print("Direct Message to " + message.author.name + ": " + reply, console_prefix)
             else:
                 common.console_print("Message to #" + message.channel.name + ": " + reply, console_prefix)
 
         if isinstance(reply, str):
-            if discordpy_legacy:
-                await discord_client.send_message(message.channel, reply)
-            else:
-                await message.channel.send(reply)
+            await message.channel.send(reply)
         else:
-            if discordpy_legacy:
-                await discord_client.send_message(message.channel, embed = reply)
-            else:
-                await message.channel.send(embed = reply)
+            await message.channel.send(embed = reply)
 
 @discord_client.event
-async def on_channel_update(before, after):
+async def on_guild_channel_update(before, after):
     if after.name != before.name:
-        if before.name in config.discord_channels and after.name not in config.discord_channels:
-            config.discord_channels.append(after.name)
-        
-        if before.name in config.discord_markov_channels and after.name not in config.discord_markov_channels:
-            config.discord_markov_channels.append(after.name)
-            
+        if before.name in discord_config.channels and after.name not in discord_config.channels:
+            discord_config.channels.append(after.name)
+
+        if before.name in discord_config.markov_channels and after.name not in discord_config.markov_channels:
+            discord_config.markov_channels.append(after.name)
+
         common.console_print("Channel #" + before.name + " has changed to #" + after.name, console_prefix)
 
-def launch(markov_instance, parent_location, stats_instance):
-    global markov, derpy_stats, run_failure
+def start():
+    global is_running
 
-    common.console_print("Discord Client version " + version, console_prefix)
-    config.load(parent_location)
-    markov = markov_instance
-    derpy_stats = stats_instance
-    discord_commands.pass_data(markov, config, stats_instance)  # We'll probably do something better eventually
-    discord_commands.load_custom_commands(False, parent_location)
-    
-    if config.bot_token == '':
-        common.console_print("Token is not present. Cannot login to Discord.", console_prefix)
-        run_failure = True
+    if is_running:
         return
 
-    try:
-        asyncio.set_event_loop(discord_client.loop)
-        discord_client.loop.run_until_complete(discord_client.start(config.bot_token))
-    except KeyboardInterrupt:
-        discord_client.loop.run_until_complete(discord_client.logout())
-        pending = asyncio.Task.all_tasks(loop = discord_client.loop)
-        gathered = asyncio.gather(*pending, loop = discord_client.loop)
-        try:
-            gathered.cancel()
-            discord_client.loop.run_until_complete(gathered)
-            gathered.exception()
-        except:
-            pass
 
-def logout():
-    future = asyncio.run_coroutine_threadsafe(discord_client.close(), discord_client.loop)
-    common.console_print("Logging out...", console_prefix)
 
-def shutdown():
-    if logged_in:
-        logout()
-    common.console_print("Shutting down client...", console_prefix)
+    common.console_print("Discord Client version " + common.versions.get('discord_client'), console_prefix)
+    discord_commands.load_custom_commands(False)
+
+    if discord_config.token == '':
+        common.console_print("Token is not present. Cannot connect to Discord.", console_prefix)
+        return
+
+    is_running = True
+    asyncio.run(discord_client.start(discord_config.token))
+    is_running = False
+
+def stop():
+    global is_running
+
+    if is_running:
+        common.console_print("Shutting down client...", console_prefix)
+        asyncio.run_coroutine_threadsafe(discord_client.close(), discord_client.loop)
+
+    is_running = False

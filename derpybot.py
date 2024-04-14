@@ -1,26 +1,29 @@
 from threading import Thread
 from configparser import ConfigParser
 import common
-import time
+import derpybot_config
+import chat_clients
 import importlib
-import importlib.util
 import re
-import os
 import datetime
 import pathlib
+import os
+import sys
 
-version = '0.9.3.12'
-
-script_location = os.path.dirname(os.path.abspath(__file__))
-config = ConfigParser(allow_no_value = True)
-
-markov = None
-chat_client = None
+VERSION = 'v0.9.4'
+common.versions.update({'derpybot':VERSION})
+common.versions.update({'python_min':'3.8'})
 derpy_stats = None
-client_thread = None
 status_thread = None
 shutting_down = False
-console_prefix = "[DerpyBot] "
+console_prefix = "[DerpyBot]"
+
+def startup_check():
+    if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 8):
+        common.console_print("Python " + common.versions.get('python_min') + " or higher is required.", console_prefix)
+        return False
+
+    return True
 
 def commands():
     common.console_print("Entering command mode...", console_prefix)
@@ -32,128 +35,83 @@ def commands():
             continue
 
         split_command = command.split()
-        command_target = split_command.pop(0)
-        sub_command = ' '.join(split_command)
+        
+        if len(split_command) > 1:
+            command_target = split_command.pop(0)
+            command = split_command.pop(0)
+            arguments = split_command
+        else:
+            command_target = ""
+            command = split_command.pop(0)
+            arguments = []
+        
+        if "client" in command_target:
+            console_client_commands(command, arguments)
+            continue
 
         if "markov" in command_target:
-            markov.incoming_console_command(sub_command)
-
-        if command == "client status":
-            chat_client.still_running(True)
-
-        if command == "client reload":
-            client_load(True)
-
-        if command == "client logout":
-            chat_client.logout()
-
-        if command == "client shutdown":
-            chat_client.shutdown()
+            common.markov.incoming_command(command, True)
+            continue
 
         if command == "shutdown":
             shutdown()
 
         if command == "reload markov":
             markov_load(True)
+            
+def console_client_commands(command, arguments):
+    if command == "status":
+            chat_clients.get_client(arguments[0]).running(True)
 
-def client_status():
-    global chat_client
-    delay = 0
+    if command == "start":
+            chat_clients.start(arguments[0])
 
-    while not shutting_down:
-        time.sleep(1.0)
-
-        if delay < 60:
-            delay += 1
-            continue
-
-        client_ok = chat_client.still_running(False)
-
-        if not client_ok:
-            client_load(True)
-
-def client_load(reload):
-    global chat_client, client_thread
-
-    common.console_print("Loading chat client...", console_prefix)
-
-    if reload:
-        chat_client.shutdown()
-        importlib.reload(chat_client)
-    else:
-        if use_discord_client:
-            chat_client = importlib.import_module('clients.discord_client.discord_client')
-
-    client_thread = None
-    client_thread = Thread(target = chat_client.launch, args = ([markov, script_location, derpy_stats]))
-    client_thread.start()
+    if command == "stop":
+            chat_clients.stop(arguments[0])
 
 def markov_load(reload):
-    global markov
-
-    if not use_markov:
+    if not derpybot_config.use_derpymarkov:
         return
 
     common.console_print("Loading markov...", console_prefix)
 
     if reload:
-        importlib.reload(markov)
+        importlib.reload(common.markov)
     else:
-        markov_package = config.get('Markov', 'markov_package')
-        markov_module = config.get('Markov', 'markov_module')
-        markov = importlib.import_module('modules.' + markov_package + '.' + markov_module)
+        common.markov = importlib.import_module('modules.derpymarkov.markov')
 
-    markov.activate(reload)
+    common.markov.activate(reload)
 
 def stats_module_load():
-    global derpy_stats
+    common.derpybot_stats.add_new_set('derpybot')
+    common.derpybot_stats.update_stats('derpybot', 'start_time', datetime.datetime.now())
 
-    derpy_stats = importlib.import_module('derpy_stats')
+def load_clients():
+    if derpybot_config.load_discord_client:
+        chat_clients.start('discord')
     
-def load_config():
-    global config
-
-    defaults_present = False
-    common.load_config_file(script_location + '/config/defaults.cfg', config)
-
-    if len(config.sections()) != 0:
-        defaults_present = True
-
-    common.load_config_file(script_location + '/config/config.cfg', config)
-    
-    if not defaults_present and len(config.sections()) == 0:
-        common.console_print("Both configuration files config.cfg and defaults.cfg are missing or empty! D:", console_prefix)
-        common.console_print("We can't function like this...", console_prefix)
-        shutdown()
-
 def shutdown():
     global shutting_down
     shutting_down = True
     common.console_print("Shutting everything down...", console_prefix)
 
-    if markov is not None:
-        if not markov.shutting_down:
-            markov.shutdown()
+    if common.markov is not None:
+        if not common.markov.shutting_down:
+            common.markov.shutdown()
 
-    if chat_client is not None:
-        chat_client.shutdown()
-
+    chat_clients.shutdown()
+    status_thread.join(1)
     common.console_print("Good night!", console_prefix)
     raise SystemExit
 
-load_config()
-use_discord_client = config.getboolean('Config', 'use_discord_client', fallback = True)
-use_markov = config.getboolean('Config', 'use_markov', fallback = True)
+if not startup_check():
+    common.console_print("Starup checks failed. Shutting down...", console_prefix)
+    raise SystemExit
+
 stats_module_load()
-common.console_print("DerpyBot version " + version, console_prefix)
+common.console_print("DerpyBot version " + common.versions.get('derpybot'), console_prefix)
 markov_load(False)
-client_load(False)
-
-while not chat_client.ready and not chat_client.run_failure:
-    time.sleep(0.1)
-
-status_thread = Thread(target = client_status, args = [])
+load_clients()
+status_thread = Thread(target = chat_clients.monitor, args = [])
 status_thread.start()
-derpy_stats.add_new_set('derpybot')
-derpy_stats.update_stats('derpybot', 'start_time', datetime.datetime.now())
 commands()

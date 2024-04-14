@@ -1,0 +1,3 @@
+[Config]
+load_discord_client = true
+use_derpymarkov = true
